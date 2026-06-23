@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module accel_top_TB(    );
+module accel_FSM_TB(    );
 //inputs and outputs
 reg ser_clk;
 reg INT1;
@@ -33,7 +33,7 @@ wire CS;
 //TB Params
 integer i;
 
-    accel_top DUT (.ser_clk(ser_clk), .INT1(INT1), .MISO(MISO), .data_out(data_out), 
+    accel_FSM DUT (.ser_clk(ser_clk), .INT1(INT1), .MISO(MISO), .data_out(data_out), 
                     .MOSI(MOSI), .outClk(outClk), .DATA_READY_FIFO(DATA_READY_FIFO), .CS(CS));
     //generate a 1MHZ clk
     initial ser_clk = 0;
