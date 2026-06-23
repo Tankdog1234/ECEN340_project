@@ -1,0 +1,11 @@
+# Ignore Vivado project folders
+*.cache/
+*.hw/
+*.ip_user_files/
+*.runs/
+*.sim/
+*.gen/
+*.xpr.old/
+.Xil/
+vivado*.log
+vivado*.jou
