@@ -158,5 +158,5 @@ module accel_FSM (
     
     end
     
-    
+    // this is a test comment
 endmodule
