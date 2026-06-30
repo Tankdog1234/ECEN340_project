@@ -35,35 +35,40 @@ module accel_FSM (
               IDLE = 2'b01,
               READ = 2'b10;
     
-    // Address
+    // Register addresses
     parameter FIFO_ADDR = 6'h38,
               INTERR_ADDR = 6'h2E,
               READ_ADDR = 6'h32,
               SAMPLE_ADDR = 6'h2C,
-              MEASURE_BIT_ADDR = 6'h2D;
+              MEASURE_BIT_ADDR = 6'h2D,
+              DATA_FORMAT_ADDR = 6'h31;
+              
     
-    parameter R = 1'b0,
-              W = 1'b1,
+    parameter R = 1'b1,
+              W = 1'b0,
               MB_T = 1'b1,
               MB_F = 1'b0,
               NS = 1'b0;
               
               // Bits 7 & 6 = FIFO mode
               // Bit 0 sets watermark level to 1
-    parameter FIFO_CONFIG = {W, MB_F, FIFO_ADDR, 8'b01000001},
+    parameter FIFO_CONFIG = {W, MB_F, FIFO_ADDR, 8'b01000001}, // 16 clock cycles
               // Bit 15 = DATA_READY
               // Bit 8 = Overrun
               // Bit 7 = DATA_READY on interrupt line 1
               // Bit 0 = Overrun on interrupt line 2
-              INTERR_CONFIG = {W, MB_T, INTERR_ADDR, 16'b1000_0001_0000_0001},
-              SET_800Hz_SAMPLE = {W, MB_F, SAMPLE_ADDR, 8'b1101},
-              SET_MEASURE_BIT = {W, MB_F, MEASURE_BIT_ADDR, 8'h08},
-              READ_CMD = {R, MB_T, READ_ADDR},
-              WRITE_CONFIG_DATA = {NS, NS, FIFO_CONFIG, NS, INTERR_CONFIG, NS, SET_800Hz_SAMPLE, NS, SET_MEASURE_BIT};
+              INTERR_CONFIG = {W, MB_T, INTERR_ADDR, 16'b1000_0001_0000_0001}, // 24 clock cycles
+              SET_800Hz_SAMPLE = {W, MB_F, SAMPLE_ADDR, 8'b1101}, // 16 clock cycles
+              SET_MEASURE_BIT = {W, MB_F, MEASURE_BIT_ADDR, 8'h08}, // 16 clock cycles
+              // Bit 3 = FULL_RES bit
+              // Bits 1 & 0 = Range bits
+              SET_DATA_FORMAT = {W, MB_F, DATA_FORMAT_ADDR, 8'b0000_0101}, // 16 clock cycles
+              READ_CMD = {R, MB_T, READ_ADDR}, // 8 bits starting a read
+              WRITE_CONFIG_DATA = {NS, NS, FIFO_CONFIG, NS, INTERR_CONFIG, NS, SET_800Hz_SAMPLE, NS, SET_DATA_FORMAT, NS, SET_MEASURE_BIT};
               
               
     reg [1:0] curr_state, next_state;
-    reg [6:0] config_cnt = 76; // 77 clock cycles for config (decrementing)
+    reg [6:0] config_cnt = 93; // 94 clock cycles for config (decrementing)
     reg [4:0] read_cnt = 24; // 25 clock cycles to perform read operation (decrementing)
     
     initial data_out = 16'b0;
@@ -124,7 +129,7 @@ module accel_FSM (
                 DATA_READY_FIFO = 1'b0;
                 MOSI = WRITE_CONFIG_DATA[config_cnt];
                 // Pulse CS high after each config command
-                if ((config_cnt > 74) || (config_cnt == 58) || (config_cnt == 33) || (config_cnt == 16)) begin
+                if ((config_cnt > 91) || (config_cnt == 75) || (config_cnt == 50) || (config_cnt == 33) || (config_cnt || 16)) begin
                     CS = 1'b1;
                 end else begin
                     CS = 1'b0;
