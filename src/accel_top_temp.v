@@ -21,10 +21,13 @@
 
 
 module accel_top_temp(
+    input clk,
     inout [7:0] JA,
     output [7:0] JB,
     output [7:0] JC
     );
+    
+    // 1 MHz clock module
     
     
 endmodule
