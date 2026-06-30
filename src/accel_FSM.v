@@ -31,6 +31,7 @@ module accel_FSM (
     output reg DATA_READY_FIFO,
     output reg CS
     );
+
     // State names
     parameter CONFIG = 2'b00,
               IDLE = 2'b01,
@@ -44,7 +45,6 @@ module accel_FSM (
               MEASURE_BIT_ADDR = 6'h2D,
               DATA_FORMAT_ADDR = 6'h31;
               
-    
     parameter R = 1'b1,
               W = 1'b0,
               MB_T = 1'b1,  // Multi-bit true/false
@@ -67,7 +67,6 @@ module accel_FSM (
               READ_CMD = {R, MB_T, READ_ADDR}, // 8 bits starting a read
               WRITE_CONFIG_DATA = {NS, NS, FIFO_CONFIG, NS, INTERR_CONFIG, NS, SET_800Hz_SAMPLE, NS, SET_DATA_FORMAT, NS, SET_MEASURE_BIT};
               
-              
     reg [1:0] curr_state, next_state;
     reg [6:0] config_cnt = 93; // 94 clock cycles for config (decrementing)
     reg [4:0] read_cnt = 24; // 25 clock cycles to perform read operation (decrementing)
@@ -75,12 +74,12 @@ module accel_FSM (
     initial data_out = 16'b0;
     initial curr_state = IDLE;
     
-    assign outClk = ser_clk | CS;
+    assign outClk = ser_clk | CS; // TODO fix inferred latch of CS
     
     always @ (negedge ser_clk or posedge reset) begin: STATE_MEMORY
         if (reset) begin
             curr_state <= CONFIG;
-            next_state <= CONFIG;
+            next_state <= CONFIG; // TODO fix "multi-driven net on pin Q" warning. May be fixed by fixing inferred latches
             config_cnt <= 93;
             read_cnt <= 24;
             
@@ -102,24 +101,23 @@ module accel_FSM (
     end
     
     always @ (posedge ser_clk) begin: MISO_SAMPLING
-    if ((curr_state == READ) && (read_cnt <= 16) && (read_cnt > 0)) begin 
-        data_out <= {data_out[14:0], MISO};
-    end
+        if ((curr_state == READ) && (read_cnt <= 16) && (read_cnt > 0)) begin 
+            data_out <= {data_out[14:0], MISO};
+        end
     end
     
     always @ (*) begin: NEXT_STATE_LOGIC
-        case (curr_state)
+        case (curr_state) // TODO add a default case
             CONFIG: begin
                 //DATA_READY_FIFO = 1'b0;
                 if (config_cnt == 0) begin
-                    next_state = IDLE;
+                    next_state = IDLE; // TODO fix inferred latch of next_state
                 end else begin
                     next_state = CONFIG;
                 end
-                end
+            end
                     
-            IDLE:
-            begin
+            IDLE: begin
                 //DATA_READY_FIFO = 1'b0;
                 if (INT1) begin
                     next_state = READ;
@@ -135,15 +133,14 @@ module accel_FSM (
                 end else begin
                     next_state = READ;
                 end
-        
         endcase
     end
     
     always @ (*) begin: OUTPUT_LOGIC
-        case (curr_state)
+        case (curr_state) // TODO add a default case
             CONFIG: begin
-                DATA_READY_FIFO = 1'b0;
-                MOSI = WRITE_CONFIG_DATA[config_cnt];
+                DATA_READY_FIFO = 1'b0; // TODO fix inferred latch of DATA_READY_FIFO
+                MOSI = WRITE_CONFIG_DATA[config_cnt]; // TODO fix inferred latch of MOSI
                 // Pulse CS high after each config command
                 if ((config_cnt > 91) || (config_cnt == 75) || (config_cnt == 50) || (config_cnt == 33) || (config_cnt || 16)) begin
                     CS = 1'b1;
@@ -152,21 +149,20 @@ module accel_FSM (
                 end
             end
             
-            IDLE:
-            begin
+            IDLE: begin
                 CS = 1;
                 DATA_READY_FIFO = 1'b0;
             end
             
-            READ:
-            begin
+            READ: begin
                 DATA_READY_FIFO = 1'b0;
                 MOSI = 1'b0;
                 CS = 1'b0;
                 
                 // Bits 24-17 are command and address data
                 if (read_cnt > 16) begin
-                    MOSI = READ_CMD[read_cnt - 17];                   
+                    MOSI = READ_CMD[read_cnt - 17]; // TODO Input operands(of sizes 5 1) of add/sub cluster ending with expression '(read_cnt - 17)' could yield maximum size of 5, but only width of 3 is being used
+
                 // Bits 16-1 are accelerometer data
                 // Bit 0 set data ready flag for FIFO
                 end else if(read_cnt == 0) begin
@@ -174,9 +170,7 @@ module accel_FSM (
                     CS = 1;
                 end
             end
-            
         endcase
-    
     end
     
     // this is a test comment
