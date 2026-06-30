@@ -3,7 +3,7 @@
   "ip_inst": {
     "xci_name": "clk_wiz_0",
     "component_reference": "xilinx.com:ip:clk_wiz:6.0",
-    "ip_revision": "18",
+    "ip_revision": "17",
     "gen_directory": "../../../../Final_project_340.gen/sources_1/ip/clk_wiz_0",
     "parameters": {
       "component_parameters": {
@@ -652,5 +652,5 @@
       }
     }
   },
-  "checksum": "ed6123ac"
+  "checksum": "dc3f4b3e"
 }

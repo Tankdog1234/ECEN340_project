@@ -46,9 +46,9 @@ module accel_FSM (
     
     parameter R = 1'b1,
               W = 1'b0,
-              MB_T = 1'b1,
+              MB_T = 1'b1,  // Multi-bit true/false
               MB_F = 1'b0,
-              NS = 1'b0;
+              NS = 1'b0;    // No signal
               
               // Bits 7 & 6 = FIFO mode
               // Bit 0 sets watermark level to 1
