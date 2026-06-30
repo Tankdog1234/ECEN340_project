@@ -22,6 +22,7 @@
 
 module accel_top_temp(
     input clk,
+    input btnC,
     inout [7:0] JA,
     output [7:0] JB,
     output [7:0] JC
@@ -38,6 +39,7 @@ module accel_top_temp(
     accel_FSM(.ser_clk(spi_clk),
               .INT1(INT1),
               .MISO(MISO),
+              .reset(btnC),
               .data_out(parallel_data_out),
               .MOSI(MOSI),
               .outClk(outClk),
