@@ -24,6 +24,7 @@ module accel_FSM (
     input ser_clk,
     input INT1,
     input MISO,
+    input reset,
     output reg [15:0] data_out,
     output reg MOSI,
     output wire outClk,
@@ -72,17 +73,32 @@ module accel_FSM (
     reg [4:0] read_cnt = 24; // 25 clock cycles to perform read operation (decrementing)
     
     initial data_out = 16'b0;
-    initial curr_state = CONFIG;
+    initial curr_state = IDLE;
     
     assign outClk = ser_clk | CS;
     
-    always @ (negedge ser_clk) begin: STATE_MEMORY
-        curr_state <= next_state;
-        config_cnt <= config_cnt - 1;
-        if (curr_state == READ) read_cnt <= read_cnt - 1;
-        else read_cnt <= 24;
+    always @ (negedge ser_clk or posedge reset) begin: STATE_MEMORY
+        if (reset) begin
+            curr_state <= CONFIG;
+            next_state <= CONFIG;
+            config_cnt <= 93;
+            read_cnt <= 24;
+            
+        end else begin
+            curr_state <= next_state;
+            
+            if (curr_state == CONFIG) begin
+                config_cnt <= config_cnt - 1;
+            end
+            
+            if (curr_state == READ) begin
+                read_cnt <= read_cnt - 1;
+            end else begin
+                read_cnt <= 24;
+            end
 //        if((read_cnt < 17) && (read_cnt >0)) data_out <= {data_out[14:0], MISO};
 //        else data_out <= data_out;
+        end
     end
     
     always @ (posedge ser_clk) begin: MISO_SAMPLING
