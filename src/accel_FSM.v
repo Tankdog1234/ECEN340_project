@@ -73,7 +73,7 @@ module accel_FSM (
 
     initial begin
         config_cnt = 93;
-        read_cnt = 24;
+        read_cnt = 29;
     end
 
     
@@ -87,7 +87,7 @@ module accel_FSM (
         if (reset) begin
             curr_state <= CONFIG;
             config_cnt <= 93;
-            read_cnt <= 24;
+            read_cnt <= 29;
             
         end else begin
             curr_state <= next_state;
@@ -99,7 +99,7 @@ module accel_FSM (
             if ((curr_state == READ)&&(read_cnt>0)) begin
                 read_cnt <= read_cnt - 1;
             end else begin
-                read_cnt <= 24;
+                read_cnt <= 29;
             end
 //        if((read_cnt < 17) && (read_cnt >0)) data_out <= {data_out[14:0], MISO};
 //        else data_out <= data_out;
@@ -165,12 +165,16 @@ module accel_FSM (
             READ: begin
                 DATA_READY_FIFO = 1'b0;
                 MOSI = 1'b0;
-                CS = 1'b0;
+                CS = 1'b1;
                 
                 // Bits 24-17 are command and address data
-                if (read_cnt > 16) begin
+                if (read_cnt <=24 && read_cnt >16) begin
                     MOSI = READ_CMD[read_cnt - 17]; // TODO Input operands(of sizes 5 1) of add/sub cluster ending with expression '(read_cnt - 17)' could yield maximum size of 5, but only width of 3 is being used
+                    CS = 1'b0;
 
+                end else if (read_cnt <= 16 && read_cnt > 0) begin
+                    MOSI = 1'b0;
+                    CS = 1'b0;
                 // Bits 16-1 are accelerometer data
                 // Bit 0 set data ready flag for FIFO
                 end else if(read_cnt == 0) begin
