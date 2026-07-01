@@ -70,6 +70,7 @@ module accel_FSM (
     reg [1:0] curr_state, next_state;
     reg [6:0] config_cnt; // 94 clock cycles for config (decrementing)
     reg [4:0] read_cnt; // 25 clock cycles to perform read operation (decrementing)
+    reg int1_tm1; // Past state of the INT1 interrupt
 
     initial begin
         config_cnt = 93;
@@ -91,6 +92,7 @@ module accel_FSM (
             
         end else begin
             curr_state <= next_state;
+            int1_tm1 <= INT1;
             
             if (curr_state == CONFIG) begin
                 config_cnt <= config_cnt - 1;
@@ -126,7 +128,7 @@ module accel_FSM (
                     
             IDLE: begin
                 //DATA_READY_FIFO = 1'b0;
-                if (INT1) begin
+                if (INT1 && !int1_tm1) begin
                     next_state = READ;
                     //read_cnt = 24;
                 end else begin
@@ -168,7 +170,7 @@ module accel_FSM (
                 CS = 1'b1;
                 
                 // Bits 24-17 are command and address data
-                if (read_cnt <=24 && read_cnt >16) begin
+                if (read_cnt <= 24 && read_cnt > 16) begin
                     MOSI = READ_CMD[read_cnt - 17]; // TODO Input operands(of sizes 5 1) of add/sub cluster ending with expression '(read_cnt - 17)' could yield maximum size of 5, but only width of 3 is being used
                     CS = 1'b0;
 
