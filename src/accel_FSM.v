@@ -68,8 +68,15 @@ module accel_FSM (
               WRITE_CONFIG_DATA = {NS, NS, FIFO_CONFIG, NS, INTERR_CONFIG, NS, SET_800Hz_SAMPLE, NS, SET_DATA_FORMAT, NS, SET_MEASURE_BIT};
               
     reg [1:0] curr_state, next_state;
-    reg [6:0] config_cnt = 93; // 94 clock cycles for config (decrementing)
-    reg [4:0] read_cnt = 24; // 25 clock cycles to perform read operation (decrementing)
+    reg [6:0] config_cnt; // 94 clock cycles for config (decrementing)
+    reg [4:0] read_cnt; // 25 clock cycles to perform read operation (decrementing)
+
+    initial begin
+        config_cnt = 93;
+        read_cnt = 24;
+    end
+
+    
     
     initial data_out = 16'b0;
     initial curr_state = IDLE;
@@ -79,7 +86,6 @@ module accel_FSM (
     always @ (negedge ser_clk or posedge reset) begin: STATE_MEMORY
         if (reset) begin
             curr_state <= CONFIG;
-            next_state <= CONFIG; // TODO fix "multi-driven net on pin Q" warning. May be fixed by fixing inferred latches
             config_cnt <= 93;
             read_cnt <= 24;
             
@@ -90,7 +96,7 @@ module accel_FSM (
                 config_cnt <= config_cnt - 1;
             end
             
-            if (curr_state == READ) begin
+            if ((curr_state == READ)&&(read_cnt>0)) begin
                 read_cnt <= read_cnt - 1;
             end else begin
                 read_cnt <= 24;
@@ -104,6 +110,7 @@ module accel_FSM (
         if ((curr_state == READ) && (read_cnt <= 16) && (read_cnt > 0)) begin 
             data_out <= {data_out[14:0], MISO};
         end
+        
     end
     
     always @ (*) begin: NEXT_STATE_LOGIC
@@ -133,6 +140,7 @@ module accel_FSM (
                 end else begin
                     next_state = READ;
                 end
+            default: next_state = IDLE;
         endcase
     end
     
@@ -142,7 +150,7 @@ module accel_FSM (
                 DATA_READY_FIFO = 1'b0; // TODO fix inferred latch of DATA_READY_FIFO
                 MOSI = WRITE_CONFIG_DATA[config_cnt]; // TODO fix inferred latch of MOSI
                 // Pulse CS high after each config command
-                if ((config_cnt > 91) || (config_cnt == 75) || (config_cnt == 50) || (config_cnt == 33) || (config_cnt || 16)) begin
+                if ((config_cnt > 91) || (config_cnt == 75) || (config_cnt == 50) || (config_cnt == 33) || (config_cnt == 16)) begin
                     CS = 1'b1;
                 end else begin
                     CS = 1'b0;
@@ -169,6 +177,11 @@ module accel_FSM (
                     DATA_READY_FIFO = 1;
                     CS = 1;
                 end
+            end
+            default:
+            begin
+                CS = 1;
+                DATA_READY_FIFO = 1'b0;
             end
         endcase
     end
