@@ -65,15 +65,16 @@ module accel_FSM (
               // Bits 1 & 0 = Range bits
               SET_DATA_FORMAT = {W, MB_F, DATA_FORMAT_ADDR, 8'b0000_0101}, // 16 clock cycles
               READ_CMD = {R, MB_T, READ_ADDR}, // 8 bits starting a read
-              WRITE_CONFIG_DATA = {NS, NS, FIFO_CONFIG, NS, INTERR_CONFIG, NS, SET_800Hz_SAMPLE, NS, SET_DATA_FORMAT, NS, SET_MEASURE_BIT};
+              WRITE_CONFIG_DATA = {NS, NS, FIFO_CONFIG, NS,NS, INTERR_CONFIG, NS,NS, SET_800Hz_SAMPLE, NS,NS, SET_DATA_FORMAT, NS,NS, SET_MEASURE_BIT};
               
     reg [1:0] curr_state, next_state;
     reg [6:0] config_cnt; // 94 clock cycles for config (decrementing)
     reg [4:0] read_cnt; // 25 clock cycles to perform read operation (decrementing)
     reg int1_tm1; // Past state of the INT1 interrupt
+    reg cs_tm1;
 
     initial begin
-        config_cnt = 93;
+        config_cnt = 97;
         read_cnt = 29;
     end
 
@@ -82,17 +83,21 @@ module accel_FSM (
     initial data_out = 16'b0;
     initial curr_state = IDLE;
     
-    assign outClk = ser_clk | CS; // TODO fix inferred latch of CS
+    assign outClk = cs_tm1 & !CS ? 1'b1: CS ? 1'b1 : ser_clk;
     
     always @ (negedge ser_clk or posedge reset) begin: STATE_MEMORY
         if (reset) begin
             curr_state <= CONFIG;
-            config_cnt <= 93;
-            read_cnt <= 29;
+            config_cnt <= 97;
+            read_cnt <= 25;
+            cs_tm1 <= CS;
+            
             
         end else begin
             curr_state <= next_state;
             int1_tm1 <= INT1;
+            int1_tm1 <= INT1;
+            cs_tm1 <= CS;
             
             if (curr_state == CONFIG) begin
                 config_cnt <= config_cnt - 1;
@@ -100,9 +105,13 @@ module accel_FSM (
             
             if ((curr_state == READ)&&(read_cnt>0)) begin
                 read_cnt <= read_cnt - 1;
-            end else begin
-                read_cnt <= 29;
+            end else if( curr_state == IDLE) begin
+                read_cnt <= 25;
             end
+            else begin
+                read_cnt <= 0;
+            end
+
 //        if((read_cnt < 17) && (read_cnt >0)) data_out <= {data_out[14:0], MISO};
 //        else data_out <= data_out;
         end
@@ -128,7 +137,7 @@ module accel_FSM (
                     
             IDLE: begin
                 //DATA_READY_FIFO = 1'b0;
-                if (INT1 && !int1_tm1) begin
+                if (INT1) begin
                     next_state = READ;
                     //read_cnt = 24;
                 end else begin
@@ -152,7 +161,7 @@ module accel_FSM (
                 DATA_READY_FIFO = 1'b0; // TODO fix inferred latch of DATA_READY_FIFO
                 MOSI = WRITE_CONFIG_DATA[config_cnt]; // TODO fix inferred latch of MOSI
                 // Pulse CS high after each config command
-                if ((config_cnt > 91) || (config_cnt == 75) || (config_cnt == 50) || (config_cnt == 33) || (config_cnt == 16)) begin
+                if ((config_cnt > 96) || (config_cnt == 79) || (config_cnt == 53) || (config_cnt == 35) || (config_cnt == 17)) begin
                     CS = 1'b1;
                 end else begin
                     CS = 1'b0;
@@ -166,8 +175,8 @@ module accel_FSM (
             
             READ: begin
                 DATA_READY_FIFO = 1'b0;
-                MOSI = 1'b0;
-                CS = 1'b1;
+                MOSI = 1'b1;
+                CS = 1'b0;
                 
                 // Bits 24-17 are command and address data
                 if (read_cnt <= 24 && read_cnt > 16) begin
@@ -180,7 +189,8 @@ module accel_FSM (
                 // Bits 16-1 are accelerometer data
                 // Bit 0 set data ready flag for FIFO
                 end else if(read_cnt == 0) begin
-                    DATA_READY_FIFO = 1;
+                    if(!INT1) DATA_READY_FIFO = 1;
+                    else DATA_READY = 0;
                     CS = 1;
                 end
             end
