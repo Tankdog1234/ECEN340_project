@@ -51,7 +51,8 @@ module accel_top_temp(
     assign JA[6] = INT1;
     assign JA[5] = 1'bZ;
     assign JA[4] = MISO;
-    assign JA[3:2] = 1'bZ;
+    assign JA[3] = 1'bZ;
+    assign JA[2] = DATA_READY_FIFO;
     assign JA[1] = MOSI;
     assign JA[0] = outClk;
     

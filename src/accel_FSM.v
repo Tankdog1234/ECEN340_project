@@ -71,11 +71,14 @@ module accel_FSM (
     reg [6:0] config_cnt; // 94 clock cycles for config (decrementing)
     reg [4:0] read_cnt; // 25 clock cycles to perform read operation (decrementing)
     reg int1_tm1; // Past state of the INT1 interrupt
+    reg int1_tm2; // Past state of the INT1 interrupt
     reg cs_tm1;
 
     initial begin
         config_cnt = 97;
         read_cnt = 29;
+        int1_tm1 = 1'b1;
+        int1_tm2 = 1'b1;
     end
 
     
@@ -91,12 +94,16 @@ module accel_FSM (
             config_cnt <= 97;
             read_cnt <= 25;
             cs_tm1 <= CS;
+            int1_tm1 <= 1'b1;
+            int1_tm2 <= 1'b1;
+
             
             
         end else begin
             curr_state <= next_state;
             int1_tm1 <= INT1;
-            int1_tm1 <= INT1;
+            int1_tm2 <= int1_tm1;
+
             cs_tm1 <= CS;
             
             if (curr_state == CONFIG) begin
@@ -137,7 +144,7 @@ module accel_FSM (
                     
             IDLE: begin
                 //DATA_READY_FIFO = 1'b0;
-                if (INT1) begin
+                if (int1_tm2) begin
                     next_state = READ;
                     //read_cnt = 24;
                 end else begin
@@ -190,7 +197,7 @@ module accel_FSM (
                 // Bit 0 set data ready flag for FIFO
                 end else if(read_cnt == 0) begin
                     if(!INT1) DATA_READY_FIFO = 1;
-                    else DATA_READY = 0;
+                    else DATA_READY_FIFO = 0;
                     CS = 1;
                 end
             end
