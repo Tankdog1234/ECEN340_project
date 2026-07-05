@@ -22,7 +22,7 @@
 
 module FFT_OUT_FIFO(
     //FIFO_WRITE
-    output FIFO_FULL
+    output FIFO_FULL,
     input [31:0] data_in,
     input write_enable, // BRING THIS FROM DATA_TVALID
     //FIFO_READ
