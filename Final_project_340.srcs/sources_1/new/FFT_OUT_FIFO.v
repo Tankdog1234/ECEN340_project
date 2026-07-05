@@ -48,16 +48,16 @@ module FFT_OUT_FIFO(
         .wr_en(gated_we), // write enaable and not wr_rst_busy
 
         .empty(FIFO_EMPTY), // when the FIFO reg is empty
-        .dout(data_out), // 
-        .rd_en(gated_re), // 
+        .dout(data_out), // data from the FIFO to the SPI module
+        .rd_en(gated_re), // read_enable(external) and ~rd_rst_busy
 
-        .rst(rst), // 
-        .wr_clk(wr_clk), // 
-        .rd_clk(rd_clk), // 
+        .rst(rst), // reset signal, high for 1 clk pulse
+        .wr_clk(wr_clk), // 100MHz clk
+        .rd_clk(rd_clk), // spi clk/32 (because we have to shift it out serially)
 
-        .wr_ack(wr_ack), // 
-        .wr_rst_busy(wr_rst_busy), // 
-        .rd_rst_busy(rd_rst_busy) // 
+        .wr_ack(wr_ack), // not sure what to do with this yet but here it is
+        .wr_rst_busy(wr_rst_busy), // rst_busy signals
+        .rd_rst_busy(rd_rst_busy) // rst_busy signals
     );
 
     //RST CNT
@@ -70,13 +70,13 @@ module FFT_OUT_FIFO(
     end
     always @ (posedge wr_clk)
     begin
-        if(gated_we) cnt <= cnt + 1;
-        if(cnt == 511 && gated_we && ~rst_done) begin
+        if(gated_we) cnt <= cnt + 1; //every time we actually write, increment by 1
+        if(cnt == 511 && gated_we && ~rst_done) begin //rst on cnt 511
             rst <= 1'b1;
-            rst_done <= 1'b1;
+            rst_done <= 1'b1; //drop the rst next cycle to continune the cnt
         end 
-        else rst <= 1'b0;
-        if(cnt == 0) rst_done <= 1'b0;
+        else rst <= 1'b0; // drop rst
+        if(cnt == 0) rst_done <= 1'b0; //reset the rst_done signal
     end
 
 
