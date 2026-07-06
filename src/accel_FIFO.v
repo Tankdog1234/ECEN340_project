@@ -29,7 +29,6 @@ module accel_FIFO(
     input RE,               // Read enable
     output reg [15:0] FIFO_out, // Data from FIFO to next function
     output reg data_ready       // Data ready flag set when 1024 bits (64 samples) are available
-    // Add write enable and read enable signals rather than holding clocks stable
     );
     
     fifo_generator_0 FIFO (.din(FIFO_in),   // Data written from accel to FIFO
@@ -57,8 +56,8 @@ module accel_FIFO(
     
     // Define logic for setting data_ready flag
     // data_ready is set to 0 when we have less than 1024 samples available to be read
-    always @ (posedge wr_clk, posedge rd_clk) begin
-        if (samp_cnt > 1023) begin
+    always @ (posedge rd_clk) begin
+        if (read_cnt > 1023) begin
             data_ready <= 1;
         end else begin
             data_ready <= 0;
@@ -72,7 +71,7 @@ module accel_FIFO(
     // Decrement the read count when the read clock pulses
     // Assert WE to read data
     always @ (posedge rd_clk) begin
-        if (WE && read_cnt > 0) begin // Make sure read_cnt never drops below 0
+        if (RE && read_cnt > 0) begin // Make sure read_cnt never drops below 0
             read_cnt <= read_cnt - 1;
         end
     end
