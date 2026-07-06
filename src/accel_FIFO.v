@@ -27,7 +27,7 @@ module accel_FIFO(
     input rst,
     input WE,                   // Write enable
     input RE,                   // Read enable
-    output reg [15:0] FIFO_out, // Data from FIFO to next function
+    output [15:0] FIFO_out,     // Data from FIFO to next function
     output reg data_ready       // Data ready flag set when 1024 samples are available
     );
     
