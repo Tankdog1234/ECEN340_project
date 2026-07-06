@@ -21,18 +21,20 @@
 
 
 module accel_FIFO(
-    input [15:0] FIFO_in,   // Data from accelerometer to FIFO
-    input wr_clk,           // Clock to write data to FIFO
-    input rd_clk,           // Clock to read data from FIFO
+    input [15:0] FIFO_in,       // Data from accelerometer to FIFO
+    input wr_clk,               // Clock to write data to FIFO
+    input rd_clk,               // Clock to read data from FIFO
     input rst,
-    input WE,               // Write enable
-    input RE,               // Read enable
+    input WE,                   // Write enable
+    input RE,                   // Read enable
     output reg [15:0] FIFO_out, // Data from FIFO to next function
-    output reg data_ready       // Data ready flag set when 1024 bits (64 samples) are available
+    output reg data_ready       // Data ready flag set when 1024 samples are available
     );
     
     fifo_generator_0 FIFO (.din(FIFO_in),   // Data written from accel to FIFO
+                           .wr_en(WE),
                            .dout(FIFO_out), // Data read from FIFO by external module
+                           .rd_en(RE),
                            .rst(rst),
                            .wr_clk(wr_clk),
                            .rd_clk(rd_clk),
@@ -43,14 +45,14 @@ module accel_FIFO(
                            
     reg samp_cnt = 0;
     reg read_cnt = 0;
+
     // Define logic for writing from the accelerometer to the FIFO
+    // Before writing to FIFO, ensure WE is asserted
     always @ (posedge wr_clk) begin
-        if (WE) begin   // Only write to FIFO if WE is asserted
-            samp_cnt <= samp_cnt + 1;
-            if (samp_cnt > 1023) begin // When 1024 samples are prepared
-                samp_cnt <= 0;
-                read_cnt <= read_cnt + 1024; // Transfer the count of samp_cnt to read_cnt
-            end
+        samp_cnt <= samp_cnt + 1;
+        if (samp_cnt > 1023) begin // When 1024 samples are prepared
+            samp_cnt <= 0;
+            read_cnt <= read_cnt + 1024; // Transfer the count of samp_cnt to read_cnt
         end
     end
     
@@ -64,12 +66,12 @@ module accel_FIFO(
         end
     end
     
-    // Count the number of entries in the FIFO for debugging purposes
+    // Count the total number of entries in the FIFO for debugging purposes
     wire FIFO_cnt;
     assign FIFO_cnt = samp_cnt + read_cnt;
     
     // Decrement the read count when the read clock pulses
-    // Assert WE to read data
+    // Assert RE to read data
     always @ (posedge rd_clk) begin
         if (RE && read_cnt > 0) begin // Make sure read_cnt never drops below 0
             read_cnt <= read_cnt - 1;
