@@ -49,7 +49,10 @@ module accel_FIFO(
     // Define logic for writing from the accelerometer to the FIFO
     // Before writing to FIFO, ensure WE is asserted
     always @ (posedge wr_clk) begin
-        samp_cnt <= samp_cnt + 1;
+        if (WE) begin
+            samp_cnt <= samp_cnt + 1;
+        end
+        
         if (samp_cnt > 1023) begin // When 1024 samples are prepared
             samp_cnt <= 0;
             read_cnt <= read_cnt + 1024; // Transfer the count of samp_cnt to read_cnt
