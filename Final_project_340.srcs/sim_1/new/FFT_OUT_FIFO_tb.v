@@ -27,6 +27,7 @@ module FFT_OUT_FIFO_tb(   );
     wire FIFO_FULL;
     reg [31:0] data_in;
     reg write_enable;
+    wire write_enable2;
     wire FIFO_EMPTY;
     wire [31:0] data_out;
     reg read_enable;
@@ -36,11 +37,16 @@ module FFT_OUT_FIFO_tb(   );
     wire wr_rst_busy;
     wire rd_rst_busy;
     reg rst;
+    drop512 DUT2 (
+        .we_FFT(write_enable),
+        .we_FIFO(write_enable2),
+        .write_clk(wr_clk)
+    );
 
     FFT_OUT_FIFO DUT (
     .FIFO_FULL(FIFO_FULL),
     .data_in(data_in),
-    .write_enable(write_enable),
+    .write_enable(write_enable2),
     .FIFO_EMPTY(FIFO_EMPTY),
     .data_out(data_out),
     .read_enable(read_enable),

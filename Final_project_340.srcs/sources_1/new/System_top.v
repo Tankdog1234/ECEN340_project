@@ -24,7 +24,8 @@ module System_top(
     input clk,
     input btnC,
     inout JA[7:0],
-    inout JB[7:0]
+    inout JB[7:0],
+    inout JC[7:0]
     );
 
     wire spi_clk, INT1, MISO, MOSI, outClk, DATA_READY_FIFO, CS, win_ready, FIFO1_DA_out, win_DA_out;
@@ -78,6 +79,21 @@ module System_top(
     .ready_out(win_ready),
     .DA_out(win_DA_out),
     .data_out(window_out)
+    );
+
+    wire DV_WE;
+
+    FFT_Interface FFT (
+        .clk(clk),
+        .data_in(window_out),
+        .acc_last(),
+        .acc_data_valid(win_ready),
+        .FFT_ready_for_acc_data(),
+        .spi_out_read_ready(),
+        .FFT_data_out(),
+        .FFT_data_last(),
+        .FFT_data_valid(DV_WE),
+        .FFT_status(JC[5:0]),
     );
 
 
