@@ -3,7 +3,7 @@
 module FFT_Interface(
     input wire clk, // 100MHz clk (system clk)
 
-    input wire [15:0] data_in, //16 bit data from acc/FIFO
+    input wire [31:0] data_in, //16 bit data from acc/FIFO
     input wire acc_last, // from FIFO, signifies last bit
     input wire acc_data_valid, //the current input is ready to be passed in
     output wire FFT_ready_for_acc_data, //if this goes low, that means we are not ready to ready to read the data in yet
@@ -20,7 +20,7 @@ module FFT_Interface(
     wire null0;
     wire [15:0] config_data;
     //imagianary part is all 0's, real part from acc
-    assign input_data = {16'b0, data_in};
+    //assign input_data = {16'b0, data_in};
     //bit 15: padding
     //bits 14-1: divide each stage by 4
     //bit 0: FFT (not inverse FFT)
@@ -28,7 +28,7 @@ module FFT_Interface(
 
     xfft_0 FFT_Processor (
     //Data In signals
-    .s_axis_sata_tdata(input_data), // acc data padded with 0's
+    .s_axis_sata_tdata(data_in), // acc data padded with 0's
     .s_axis_data_tlast(acc_last), //from the FIFO, tells when all 1024 samples are in
     .s_axis_data_tready(FFT_ready_for_acc_data), //if we are ever not ready to recieve, this goes low
     .s_axis_data_tvalid(acc_data_valid), //FIFO is ready to give to us
