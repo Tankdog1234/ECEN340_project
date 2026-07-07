@@ -81,7 +81,8 @@ module System_top(
     .data_out(window_out)
     );
 
-    wire DV_WE;
+    wire DV_WE, DDV_WE;
+    wire [31:0] FFT_data_out;
 
     FFT_Interface FFT (
         .clk(clk),
@@ -90,14 +91,43 @@ module System_top(
         .acc_data_valid(win_ready),
         .FFT_ready_for_acc_data(),
         .spi_out_read_ready(),
-        .FFT_data_out(),
+        .FFT_data_out(FFT_data_out),
         .FFT_data_last(),
         .FFT_data_valid(DV_WE),
         .FFT_status(JC[5:0]),
     );
 
+    drop512 U1 (
+        .we_FFT(DV_WE),
+        .we_FIFO(DDV_WE),
+        .write_clk(clk),
+        .int3(JB[0])
+    );
 
+    FFT_OUT_FIFO FIFO2 (
+        .FIFO_FULL(),
+        .data_in(FFT_data_out),
+        .write_enable(DDV_WE),
+        .FIFO_EMPTY(),
+        .data_out(par_data_fifo_out),
+        .read_enable(JB[4]), //CS line
+        .rst_ext(btnC),
+        .wr_clk(clk),
+        .rd_clk(rd_clk),
+        .wr_ack(),
+        .wr_rst_busy(wr_rst_busy),
+        .rd_rst_busy(rd_rst_busy)
+    ); 
 
-
-
+    wire rd_clk;
+    wire [31:0] par_data_fifo_out;
+    FFT_OUT_SPI SPI2 (
+        .par_data_in(par_data_fifo_out),
+        .spi_clk(JB[2]),
+        .spi_clk_cont(JB[1]),
+        .CS(JB[4]),
+        .MISO(JB[3]),
+        .rd_clk(rd_clk)
+    );
+    
 endmodule

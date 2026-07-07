@@ -2,7 +2,7 @@
 
 
 module FFT_OUT_SPI(
-    
+     
     input [31:0] par_data_in, // 32 bit data from FIFO
     input spi_clk, //1MHz ish clk
     input spi_clk_cont, //1MHz ish clk but not gated by CS
