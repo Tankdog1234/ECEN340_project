@@ -24,11 +24,12 @@ module System_top(
     input clk,
     input btnC,
     inout JA[7:0],
-    inout JB[7:0],
+    inout JB[7:0]
     );
 
-    wire spi_clk, INT1, MISO, MOSI, outClk, DATA_READY_FIFO, CS;
-    wire [15:0] parallel_data_out;
+    wire spi_clk, INT1, MISO, MOSI, outClk, DATA_READY_FIFO, CS, win_ready, FIFO1_DA_out, win_DA_out;
+    wire [15:0] parallel_data_out, FIFO1_out;
+    wire [31:0] window_out;
 
     assign JA[7] = CS;
     assign JA[6] = INT1;
@@ -57,19 +58,27 @@ module System_top(
         .CS(CS)
         );
 
-    
+
     accel_FIFO FIFO1 (
         .FIFO_in(parallel_data_out),
         .wr_clk(spi_clk),
         .rd_clk(clk),
         .rst(btnC),
         .WE(DATA_READY_FIFO),
-        .RE(),
-        .FIFO_out(),
+        .RE(win_ready),
+        .FIFO_out(FIFO1_out),
         .data_ready()
     );
 
-            
+    windowing HANN0 (
+    .clk(clk),
+    .rst(btnC),
+    .DA_in(FIFO1_DA_out),
+    .data_in(FIFO1_out),
+    .ready_out(win_ready),
+    .DA_out(win_DA_out),
+    .data_out(window_out)
+    );
 
 
 

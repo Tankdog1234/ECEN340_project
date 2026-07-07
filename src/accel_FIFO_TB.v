@@ -47,18 +47,23 @@ module accel_FIFO_TB();
     );
     
     wire empty, full;
-    assign empty = accel_FIFO.empty;
-    assign full = accel_FIFO.full;
+    wire wr_rst_busy, rd_rst_busy;
+    assign empty = DUT.empty;
+    assign full = DUT.full;
+    assign wr_rst_busy = DUT.wr_rst_busy;
+    assign rd_rst_busy = DUT.rd_rst_busy;
 
     integer i = 0;
     initial begin
-        btnC <= 0;
+        btnC <= 1;
         WE <= 0;
         RE <= 0;
+        #500;
+        btnC <= 0;
     end
 
     always @ (posedge wr_clk) begin
-        if (i < 1023) begin
+        if (i <= 1023 && !DUT.wr_rst_busy && !full) begin
             WE <= 1;
             i <= i + 1;
 
@@ -87,7 +92,7 @@ module accel_FIFO_TB();
             end
         end
         
-        if (rd_cnt > 1023) $finish;
+        if (rd_cnt >= 1023) $finish;
 
     end
 
