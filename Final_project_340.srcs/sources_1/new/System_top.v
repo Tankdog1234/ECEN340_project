@@ -94,7 +94,7 @@ module System_top(
         .FFT_data_out(FFT_data_out),
         .FFT_data_last(),
         .FFT_data_valid(DV_WE),
-        .FFT_status(JC[5:0]),
+        .FFT_status(JC[5:0])
     );
 
     drop512 U1 (
