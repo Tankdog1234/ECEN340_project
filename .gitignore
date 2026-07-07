@@ -1,11 +1,34 @@
-# Ignore Vivado project folders
+# ==========================================
+# Vivado Project Files (Since we will be using Tcl scripts)
+# ==========================================
+*.xpr
+
+# ==========================================
+# Vivado Directory and Workspace Dumps
+# ==========================================
+# This blocks the massive local folders Vivado generates automatically
 *.cache/
 *.hw/
+*.sim/
 *.ip_user_files/
 *.runs/
-*.sim/
-*.gen/
-*.xpr.old/
 .Xil/
-vivado*.log
-vivado*.jou
+
+# ==========================================
+# Vivado Log, Journal, and Process Files
+# ==========================================
+# These files track your cursor, open windows, and logs for every single run
+*.log
+*.jou
+*.pb
+*.str
+vivado_pid*.str
+vivado_pid*.zip
+
+# ==========================================
+# IP & Block Design Generated Outputs
+# ==========================================
+# Only keep your original .xci or .bd files. Ignore everything Vivado 
+# spits out when it synthesizes or targets them locally.
+_x/
+*.ip_user_files/
