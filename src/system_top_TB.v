@@ -20,7 +20,15 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module system_top_TB(
+module system_top_TB();
+    // Generate a 100 MHz clock
+    reg clk = 0;
+    always #5 clk = ~clk;
 
+    System_top DUT (.clk(),
+                    .btnC(),
+                    .JA(),
+                    .JB()
     );
+
 endmodule
