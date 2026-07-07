@@ -194,9 +194,14 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
+<<<<<<< Updated upstream
       <File Path="$PPRDIR/src/accel_FSM_TB.v">
         <FileInfo>
           <Attr Name="AutoDisabled" Val="1"/>
+=======
+      <File Path="$PSRCDIR/sim_1/new/FFT_OUT_FIFO_tb.v">
+        <FileInfo>
+>>>>>>> Stashed changes
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
@@ -204,7 +209,11 @@
       </File>
       <Config>
         <Option Name="DesignMode" Val="RTL"/>
+<<<<<<< Updated upstream
         <Option Name="TopModule" Val="accel_top_temp"/>
+=======
+        <Option Name="TopModule" Val="FFT_OUT_FIFO_tb"/>
+>>>>>>> Stashed changes
         <Option Name="TopLib" Val="xil_defaultlib"/>
         <Option Name="TopAutoSet" Val="TRUE"/>
         <Option Name="TransportPathDelay" Val="0"/>
