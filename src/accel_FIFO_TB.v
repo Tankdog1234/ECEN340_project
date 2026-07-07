@@ -31,21 +31,31 @@ module accel_FIFO_TB();
 
     reg [15:0] din = 16'h0;
     wire [15:0] dout;
-    wire btnC, WE, RE, data_ready;
-    reg rd_cnt = 0;
+    reg btnC, WE, RE;
+    wire data_ready;
+    reg data_ready_tm1;
+    reg [9:0] rd_cnt = 0;
 
-    accel_FIFO(.FIFO_in(din),
-               .wr_clk(wr_clk),
-               .rd_clk(rd_clk),
-               .rst(btnC),
-               .WE(WE),
-               .RE(RE),
-               .FIFO_out(dout),
-               .data_ready(data_ready)
+    accel_FIFO DUT (.FIFO_in(din),
+                    .wr_clk(wr_clk),
+                    .rd_clk(rd_clk),
+                    .rst(btnC),
+                    .WE(WE),
+                    .RE(RE),
+                    .FIFO_out(dout),
+                    .data_ready(data_ready)
     );
+    
+    wire empty, full;
+    assign empty = accel_FIFO.empty;
+    assign full = accel_FIFO.full;
 
     integer i = 0;
-    initial btnC = 0;
+    initial begin
+        btnC <= 0;
+        WE <= 0;
+        RE <= 0;
+    end
 
     always @ (posedge wr_clk) begin
         if (i < 1023) begin
@@ -59,21 +69,25 @@ module accel_FIFO_TB();
     end
 
     always @ (posedge rd_clk) begin
-        // Since data_ready goes low upon starting to read from the FIFO, lock in the data reading process
-        if (data_ready) begin
+        data_ready_tm1 <= data_ready;
+    
+        // Since data_ready goes low upon starting to read from the FIFO...
+        if (data_ready && !data_ready_tm1) begin
             RE <= 1;
             rd_cnt <= 0;
         end
         
         // Ensure all 1024 samples are read out
-        if (rd_lock_in) begin
-            if (rd_cnt < 1023) begin
+        if (RE) begin
+            if (rd_cnt <= 1023) begin
                 rd_cnt <= rd_cnt + 1;
                 $display(dout);
             end else begin
                 RE <= 0;
             end
         end
+        
+        if (rd_cnt > 1023) $finish;
 
     end
 
