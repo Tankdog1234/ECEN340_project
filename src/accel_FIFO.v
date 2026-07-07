@@ -68,18 +68,32 @@ module accel_FIFO(
 //        end
 //    end
     
-    reg [9:0] data_cnt;
+    reg [9:0] data_cnt = 0;
+    reg [1:0] rst_wait = 0;
     
     // Define logic for setting data_ready flag
     // data_ready is set to 0 when we have less than 1024 samples available to be read
     always @ (posedge wr_clk) begin
-        if (wr_en) begin
+        if (rst) begin
+            rst_wait <= 3;
+            data_ready <= 0;
+            data_cnt = 0;
+        end
+        else if (rst_wait > 0) begin
+            rst_wait <= rst_wait - 1;
+            data_ready <= 0;
+        end
+        else if (wr_en && !rst_wait) begin
             data_cnt <= data_cnt + 1;
             if (data_cnt >= 1023) begin
                 data_ready <= 1;
             end else begin
                 data_ready <= 0;
             end
+        end
+        else begin
+            data_ready <= data_ready;
+            data_cnt <= data_cnt;
         end
     end
     
