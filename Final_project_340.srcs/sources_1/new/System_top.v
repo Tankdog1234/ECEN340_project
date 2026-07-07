@@ -24,7 +24,7 @@ module System_top(
     input clk,
     input btnC,
     inout JA[7:0],
-    inout JB[7:0],
+    inout JB[7:0]
     );
 
     wire spi_clk, INT1, MISO, MOSI, outClk, DATA_READY_FIFO, CS;
@@ -57,7 +57,7 @@ module System_top(
         .CS(CS)
         );
 
-    
+
     accel_FIFO FIFO1 (
         .FIFO_in(parallel_data_out),
         .wr_clk(spi_clk),
