@@ -43,7 +43,7 @@ module FFT_Interface(
     .m_axis_data_tlast(FFT_data_last),      //output signal saying this is the last datapoint
     .m_axis_data_tready(spi_out_read_ready),//input signal for when the spi is ready to read
     .m_axis_data_tvalid(FFT_data_valid),    //output signal for when the data is valid
-    //status signals (for debugging or errors and such, check datasheet for details)
+    //status signals (for debugging or errors and such, check datasheet for details
     .event_frame_started(           FFT_status[0]), 
     .event_tlast_unexpected(        FFT_status[1]),
     .event_tlast_missing(           FFT_status[2]),
