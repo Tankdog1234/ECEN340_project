@@ -58,8 +58,7 @@
     <Option Name="IPUserFilesDir" Val="$PIPUSERFILESDIR"/>
     <Option Name="IPStaticSourceDir" Val="$PIPUSERFILESDIR/ipstatic"/>
     <Option Name="EnableBDX" Val="FALSE"/>
-<<<<<<< HEAD
-    <Option Name="WTXSimLaunchSim" Val="43"/>
+    <Option Name="WTXSimLaunchSim" Val="23"/>
 =======
     <Option Name="WTXSimLaunchSim" Val="23"/>
 >>>>>>> 90f97d97e7529cb1277ec9b17b77a03afee86633
@@ -182,8 +181,7 @@
     </FileSet>
     <FileSet Name="sim_1" Type="SimulationSrcs" RelSrcDir="$PSRCDIR/sim_1" RelGenDir="$PGENDIR/sim_1">
       <Filter Type="Srcs"/>
-<<<<<<< HEAD
-      <File Path="$PPRDIR/src/accel_FSM_TB.v">
+      <File Path="$PSRCDIR/sim_1/new/FFT_OUT_FIFO_tb.v">
         <FileInfo>
           <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -191,7 +189,7 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/src/accel_FIFO_TB.v">
+      <File Path="$PPRDIR/src/windowing_tb.v">
 =======
       <File Path="$PSRCDIR/sim_1/new/FFT_OUT_FIFO_tb.v">
 >>>>>>> 90f97d97e7529cb1277ec9b17b77a03afee86633
@@ -202,18 +200,11 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/src/windowing_tb.v">
-        <FileInfo>
-          <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-<<<<<<< Updated upstream
-      <File Path="$PPRDIR/src/accel_FSM_TB.v">
-        <FileInfo>
-          <Attr Name="AutoDisabled" Val="1"/>
 =======
       <File Path="$PSRCDIR/sim_1/new/FFT_OUT_FIFO_tb.v">
         <FileInfo>
@@ -225,14 +216,10 @@
       </File>
       <Config>
         <Option Name="DesignMode" Val="RTL"/>
-<<<<<<< HEAD
-        <Option Name="TopModule" Val="windowing_tb"/>
-=======
-<<<<<<< Updated upstream
-        <Option Name="TopModule" Val="accel_top_temp"/>
-=======
         <Option Name="TopModule" Val="FFT_OUT_FIFO_tb"/>
->>>>>>> Stashed changes
+<<<<<<< HEAD
+>>>>>>> 90f97d97e7529cb1277ec9b17b77a03afee86633
+=======
 >>>>>>> 90f97d97e7529cb1277ec9b17b77a03afee86633
         <Option Name="TopLib" Val="xil_defaultlib"/>
         <Option Name="TopAutoSet" Val="TRUE"/>
