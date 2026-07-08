@@ -2,7 +2,7 @@
 // Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2025.2.1 (win64) Build 6403652 Thu Mar 19 19:48:24 GMT 2026
-// Date        : Tue Jun 30 10:08:36 2026
+// Date        : Tue Jul  7 23:07:20 2026
 // Host        : MyNewComputer running 64-bit major release  (build 9200)
 // Command     : write_verilog -force -mode funcsim
 //               c:/Users/User/Documents/GitHub/ECEN340_project/Final_project_340.gen/sources_1/ip/clk_wiz_0/clk_wiz_0_sim_netlist.v
