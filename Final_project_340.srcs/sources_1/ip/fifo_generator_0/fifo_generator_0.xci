@@ -400,7 +400,7 @@
         "OUTPUTDIR": [ { "value": "../../../../Final_project_340.gen/sources_1/ip/fifo_generator_0" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
         "SHAREDDIR": [ { "value": "." } ],
-        "SWVERSION": [ { "value": "2025.2" } ],
+        "SWVERSION": [ { "value": "2025.2.1" } ],
         "SYNTHESISFLOW": [ { "value": "OUT_OF_CONTEXT" } ]
       }
     },
@@ -480,5 +480,5 @@
       }
     }
   },
-  "checksum": "76367eeb"
+  "checksum": "8840b015"
 }

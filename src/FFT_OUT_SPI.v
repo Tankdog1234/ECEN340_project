@@ -26,7 +26,7 @@ module FFT_OUT_SPI(
     //on posedge of spi_clk (if CS) Increment bit_out. If we are on the first bit (bit_out == 0) shift in new par_data 
     always @ (posedge spi_clk)
     begin
-        if(CS)bit_out <= bit_out +1;
+        if(!CS)bit_out <= bit_out +1;
         else bit_out <= bit_out;
         if(bit_out==0) par_data_hold <= par_data_in;
         else par_data_hold <= par_data_hold;

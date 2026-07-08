@@ -33,11 +33,11 @@ module windowing #(
     // Drive the ready signal (Ready as long as not in reset)
     assign ready_out = DA_in & FFT_ready;
 
-    // 1. Address Counter
+   
     always @(posedge clk or posedge rst) begin
         if (rst) begin
             addr_counter <= 0;
-        end else if (DA_in) begin
+        end else if (DA_in && FFT_ready) begin
             if (addr_counter == FFT_SIZE - 1) begin
                 addr_counter <= 0;
             end else begin
@@ -46,43 +46,38 @@ module windowing #(
         end
     end
 
-    // 2. Pipeline Delay (Aligning Data with BRAM)
-    always @(posedge clk) begin
-        if (DA_in) begin
-            data_in_delayed <= data_in;
-        end
-        DA_in_delayed <= DA_in;
-        if(DA_out)
-        begin
-            
-            data_last_delay <= data_last;
-            data_last_pipeline <= data_last_delay;
-        end
-        else
-        begin
-            data_last_delay <= data_last_delay;
-            data_last_pipeline <= data_last_pipeline;
-        end
 
+    always @(posedge clk) begin
+        if (FFT_ready) begin // Stall protection
+            if (DA_in) begin
+                data_in_delayed <= data_in;
+                data_last_delay <= data_last; 
+            end
+            DA_in_delayed <= DA_in;
+        end
     end
 
-    // 3. BRAM Instantiation (Holds the Hann Window)
-    // Replaced the old hann_rom placeholder with your actual Vivado IP
+
     blk_mem_gen_0 window_rom (
         .clka(clk),
         .addra(addr_counter),
         .douta(window_coeff)
     );
 
-    // 4. Multiplication
-    assign mult_result = data_in_delayed * window_coeff;
+    wire [32:0] mult_result32;
+    assign mult_result32 = $signed(data_in_delayed) * $signed({1'b0, window_coeff});
+    assign mult_result = mult_result32[31:0];
 
-    // 5. Output Formatting (Real + Imaginary Padding)
     always @(posedge clk) begin
-        DA_out <= DA_in_delayed;
-        if (DA_in_delayed) begin
-            // Upper 16 bits: Imaginary (0), Lower 16 bits: Real (Upper 16 of mult)
-            data_out <= {16'b0, mult_result[31:16]}; 
+        if (FFT_ready) begin
+            DA_out <= DA_in_delayed;
+            
+            if (DA_in_delayed) begin
+                data_out <= {16'b0, mult_result[31:16]};
+                data_last_pipeline <= data_last_delay; 
+            end else begin
+                data_last_pipeline <= 1'b0; 
+            end
         end
     end
 

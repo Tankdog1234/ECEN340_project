@@ -1,23 +1,4 @@
 `timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 06/25/2026 12:13:45 PM
-// Design Name: 
-// Module Name: Accel_FIFO
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
 
 module accel_FIFO(
     input [15:0] FIFO_in,       // Data from accelerometer to FIFO
@@ -47,7 +28,8 @@ module accel_FIFO(
                            .wr_clk(wr_clk),
                            .rd_clk(rd_clk),
                            .wr_rst_busy(wr_rst_busy),
-                           .rd_rst_busy(rd_rst_busy)
+                           .rd_rst_busy(rd_rst_busy),
+                           .rd_data_count(rd_data_count)
                            );
                            
 //    reg [15:0] samp_cnt = 0;
@@ -56,7 +38,8 @@ module accel_FIFO(
     // Only set FIFO wr_en when there's FIFO space, is not busy resetting, and WE is enabled
     assign wr_en = !full  && !wr_rst_busy && WE;
     // Only set FIFO rd_en when there's FIFO data, is not busy resetting, and RE is enabled
-    assign rd_en = !empty && !rd_rst_busy && RE;
+    assign rd_en = !empty && !rd_rst_busy && RE && (frame_available || frame_active);
+
 
 //    // Define logic for writing from the accelerometer to the FIFO
 //    // Before writing to FIFO, ensure WE is asserted
@@ -73,7 +56,7 @@ module accel_FIFO(
     
     reg [9:0] data_cnt = 0;
     reg [1:0] rst_wait = 0;
-    
+    /*
     // Define logic for setting data_ready flag
     // data_ready is set to 0 when we have less than 1024 samples available to be read
     always @ (posedge wr_clk) begin
@@ -116,7 +99,7 @@ assign data_last = (read_cnt == 0) && rd_en; // Pulsed strictly for 1 cycle when
 
 reg frame_active;
 
-always @ (posedge rd_clk or posedge master_rst) begin
+always @ (posedge rd_clk or posedge rst) begin
     if (rst) begin
         read_cnt     <= 1023;
         frame_active <= 0;
@@ -133,6 +116,48 @@ always @ (posedge rd_clk or posedge master_rst) begin
         
     end
 end
+*/
 
+
+// Inside accel_FIFO module
+
+
+// Generate frame logic completely in the 100 MHz rd_clk domain
+reg frame_active;
+reg [9:0] read_cnt;
+
+// A frame is safely available if the FIFO holds 1024 or more words
+wire frame_available = (rd_data_count >= 1024);
+
+// Only read when the downstream is ready AND we have a frame to process
+assign rd_en = !empty && !rd_rst_busy && RE && (frame_available || frame_active);
+
+always @ (posedge rd_clk or posedge rst) begin
+    if (rst) begin
+        read_cnt     <= 1023;
+        frame_active <= 0;
+        data_ready   <= 0;
+    end else begin
+        // Start the frame: Pull data_ready high for the whole frame
+        if (frame_available && !frame_active) begin
+            frame_active <= 1;
+            data_ready   <= 1; 
+        end 
+        
+        // Track the 1024 words leaving the FIFO
+        if (rd_en) begin
+            if (read_cnt == 0) begin
+                read_cnt     <= 1023;
+                frame_active <= 0;
+                data_ready   <= 0; // Drop it low when the frame finishes
+            end else begin
+                read_cnt     <= read_cnt - 1;
+            end
+        end
+    end
+end
+
+// data_last strictly pulses high for 1 cycle on the final word
+assign data_last = (read_cnt == 0) && rd_en;
 
 endmodule

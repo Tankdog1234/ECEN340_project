@@ -16,7 +16,7 @@ module System_top(
     wire DV_WE, DDV_WE;
     wire [31:0] FFT_data_out;
     wire FFT_ready;
-    
+
     wire data_last, data_ready, data_last_pipeline;
 
     wire rd_clk;
@@ -96,7 +96,9 @@ module System_top(
         .write_clk(clk),
         .int3(JB[0])
     );
-
+    wire wr_rst_busy;
+    wire rd_rst_busy;
+    
     FFT_OUT_FIFO FIFO2 (
         .FIFO_FULL(),
         .data_in(FFT_data_out),
