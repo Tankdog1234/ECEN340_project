@@ -31,7 +31,7 @@ module windowing #(
     wire [31:0] mult_result;
 
     // Drive the ready signal (Ready as long as not in reset)
-    assign ready_out = DA_in & FFT_ready;
+    assign ready_out = FFT_ready;
 
    
     always @(posedge clk or posedge rst) begin
@@ -60,6 +60,7 @@ module windowing #(
 
     blk_mem_gen_0 window_rom (
         .clka(clk),
+        .ena(FFT_ready),
         .addra(addr_counter),
         .douta(window_coeff)
     );

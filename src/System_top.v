@@ -81,7 +81,7 @@ module System_top(
         .clk(clk),
         .data_in(window_out),
         .acc_last(data_last_pipeline),
-        .acc_data_valid(win_ready),
+        .acc_data_valid(win_DA_out),
         .FFT_ready_for_acc_data(FFT_ready),
         .spi_out_read_ready(1'b1),
         .FFT_data_out(FFT_data_out),
