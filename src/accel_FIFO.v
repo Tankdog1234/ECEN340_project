@@ -27,8 +27,11 @@ module accel_FIFO(
     input WE,                   // Write enable
     input RE,                   // Read enable
     output [15:0] FIFO_out,     // Data from FIFO to next function
-    output reg data_ready       // Data ready flag set when 1024 samples are available
+    output reg data_ready,       // Data ready flag set when 1024 samples are available
+    output wire data_last
     );
+
+    assign data_last = (data_cnt == 0);
     
     wire full, empty, wr_rst_busy, rd_rst_busy;
     wire wr_en, rd_en;

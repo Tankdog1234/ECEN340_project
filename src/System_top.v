@@ -1,23 +1,4 @@
 `timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 07/07/2026 09:06:05 AM
-// Design Name: 
-// Module Name: System_top
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
 
 
 module System_top(
@@ -28,7 +9,7 @@ module System_top(
     inout JC[7:0]
     );
 
-    wire spi_clk, INT1, MISO, MOSI, outClk, DATA_READY_FIFO, CS, win_ready, FIFO1_DA_out, win_DA_out;
+    wire spi_clk, INT1, MISO, MOSI, outClk, DATA_READY_FIFO, CS, win_ready, win_DA_out;
     wire [15:0] parallel_data_out, FIFO1_out;
     wire [31:0] window_out;
 
@@ -58,7 +39,7 @@ module System_top(
         .DATA_READY_FIFO(DATA_READY_FIFO),
         .CS(CS)
         );
-
+    wire data_last, data_ready, data_last_pipeline;
 
     accel_FIFO FIFO1 (
         .FIFO_in(parallel_data_out),
@@ -68,29 +49,34 @@ module System_top(
         .WE(DATA_READY_FIFO),
         .RE(win_ready),
         .FIFO_out(FIFO1_out),
-        .data_ready()
+        .data_ready(data_ready),
+        .data_last(data_last)
     );
 
     windowing HANN0 (
     .clk(clk),
     .rst(btnC),
-    .DA_in(FIFO1_DA_out),
+    .DA_in(data_ready),
     .data_in(FIFO1_out),
     .ready_out(win_ready),
     .DA_out(win_DA_out),
-    .data_out(window_out)
+    .data_out(window_out),
+    .FFT_ready(FFT_ready),
+    .data_last(data_last),
+    .data_last_pipeline(data_last_pipeline)
     );
 
     wire DV_WE, DDV_WE;
     wire [31:0] FFT_data_out;
+    wire FFT_ready;
 
     FFT_Interface FFT (
         .clk(clk),
         .data_in(window_out),
-        .acc_last(),
+        .acc_last(data_last_pipeline),
         .acc_data_valid(win_ready),
-        .FFT_ready_for_acc_data(),
-        .spi_out_read_ready(),
+        .FFT_ready_for_acc_data(FFT_ready),
+        .spi_out_read_ready(1'b1),
         .FFT_data_out(FFT_data_out),
         .FFT_data_last(),
         .FFT_data_valid(DV_WE),

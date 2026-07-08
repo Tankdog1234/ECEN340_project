@@ -28,7 +28,7 @@ module FFT_Interface(
 
     xfft_0 FFT_Processor (
     //Data In signals
-    .s_axis_sata_tdata(data_in), // acc data padded with 0's
+    .s_axis_data_tdata(data_in), // acc data padded with 0's
     .s_axis_data_tlast(acc_last), //from the FIFO, tells when all 1024 samples are in
     .s_axis_data_tready(FFT_ready_for_acc_data), //if we are ever not ready to recieve, this goes low
     .s_axis_data_tvalid(acc_data_valid), //FIFO is ready to give to us
