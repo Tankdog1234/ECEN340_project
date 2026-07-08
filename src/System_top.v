@@ -4,14 +4,23 @@
 module System_top(
     input clk,
     input btnC,
-    inout JA[7:0],
-    inout JB[7:0],
-    inout JC[7:0]
+    inout [7:0] JA,
+    inout [7:0] JB,
+    inout [7:0] JC
     );
 
     wire spi_clk, INT1, MISO, MOSI, outClk, DATA_READY_FIFO, CS, win_ready, win_DA_out;
     wire [15:0] parallel_data_out, FIFO1_out;
     wire [31:0] window_out;
+    
+    wire DV_WE, DDV_WE;
+    wire [31:0] FFT_data_out;
+    wire FFT_ready;
+    
+    wire data_last, data_ready, data_last_pipeline;
+
+    wire rd_clk;
+    wire [31:0] par_data_fifo_out;
 
     assign JA[7] = CS;
     assign JA[6] = INT1;
@@ -39,7 +48,7 @@ module System_top(
         .DATA_READY_FIFO(DATA_READY_FIFO),
         .CS(CS)
         );
-    wire data_last, data_ready, data_last_pipeline;
+
 
     accel_FIFO FIFO1 (
         .FIFO_in(parallel_data_out),
@@ -66,9 +75,7 @@ module System_top(
     .data_last_pipeline(data_last_pipeline)
     );
 
-    wire DV_WE, DDV_WE;
-    wire [31:0] FFT_data_out;
-    wire FFT_ready;
+
 
     FFT_Interface FFT (
         .clk(clk),
@@ -80,7 +87,7 @@ module System_top(
         .FFT_data_out(FFT_data_out),
         .FFT_data_last(),
         .FFT_data_valid(DV_WE),
-        .FFT_status(JC[5:0]),
+        .FFT_status(JC[5:0])
     );
 
     drop512 U1 (
@@ -105,8 +112,7 @@ module System_top(
         .rd_rst_busy(rd_rst_busy)
     ); 
 
-    wire rd_clk;
-    wire [31:0] par_data_fifo_out;
+
     FFT_OUT_SPI SPI2 (
         .par_data_in(par_data_fifo_out),
         .spi_clk(JB[2]),

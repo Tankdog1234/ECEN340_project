@@ -31,7 +31,7 @@ module accel_FIFO(
     output wire data_last
     );
 
-    assign data_last = (data_cnt == 0);
+
     
     wire full, empty, wr_rst_busy, rd_rst_busy;
     wire wr_en, rd_en;
@@ -111,5 +111,28 @@ module accel_FIFO(
 //            read_cnt <= read_cnt - 1;
 //        end
 //    end
+reg [9:0] read_cnt;
+assign data_last = (read_cnt == 0) && rd_en; // Pulsed strictly for 1 cycle when the last word is read
+
+reg frame_active;
+
+always @ (posedge rd_clk or posedge master_rst) begin
+    if (rst) begin
+        read_cnt     <= 1023;
+        frame_active <= 0;
+    end else begin
+        if (rd_en) begin
+            frame_active <= 1;
+            if (read_cnt == 0) begin
+                read_cnt <= 1023; 
+                frame_active <= 0;
+            end else begin
+                read_cnt <= read_cnt - 1;
+            end
+        end
+        
+    end
+end
+
 
 endmodule

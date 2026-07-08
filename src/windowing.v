@@ -52,8 +52,18 @@ module windowing #(
             data_in_delayed <= data_in;
         end
         DA_in_delayed <= DA_in;
-        data_last_delay <= data_last;
-        data_last_pipeline <= data_last_delay;
+        if(DA_out)
+        begin
+            
+            data_last_delay <= data_last;
+            data_last_pipeline <= data_last_delay;
+        end
+        else
+        begin
+            data_last_delay <= data_last_delay;
+            data_last_pipeline <= data_last_pipeline;
+        end
+
     end
 
     // 3. BRAM Instantiation (Holds the Hann Window)

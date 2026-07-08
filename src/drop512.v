@@ -33,7 +33,7 @@ module drop512(
     initial begin
          cnt = 0;
          cnt2 = 0;
-         int3 <= 0;
+         //int3 = 0;
     end
     always @ (posedge write_clk)
     begin
