@@ -2,7 +2,7 @@
 // Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2025.2.1 (win64) Build 6403652 Thu Mar 19 19:48:24 GMT 2026
-// Date        : Tue Jul  7 23:07:20 2026
+// Date        : Wed Jul  8 15:55:09 2026
 // Host        : MyNewComputer running 64-bit major release  (build 9200)
 // Command     : write_verilog -force -mode funcsim
 //               c:/Users/User/Documents/GitHub/ECEN340_project/Final_project_340.gen/sources_1/ip/clk_wiz_0/clk_wiz_0_sim_netlist.v
@@ -20,7 +20,7 @@ module clk_wiz_0
   output clk_out1;
   input clk_in1;
 
-  (* IBUF_LOW_PWR *) wire clk_in1;
+  wire clk_in1;
   wire clk_out1;
 
   clk_wiz_0_clk_wiz inst
@@ -54,12 +54,7 @@ module clk_wiz_0_clk_wiz
        (.I(clkfbout_clk_wiz_0),
         .O(clkfbout_buf_clk_wiz_0));
   (* BOX_TYPE = "PRIMITIVE" *) 
-  (* CAPACITANCE = "DONT_CARE" *) 
-  (* IBUF_DELAY_VALUE = "0" *) 
-  (* IFD_DELAY_VALUE = "AUTO" *) 
-  IBUF #(
-    .IOSTANDARD("DEFAULT")) 
-    clkin1_ibufg
+  BUFG clkin1_bufg
        (.I(clk_in1),
         .O(clk_in1_clk_wiz_0));
   (* BOX_TYPE = "PRIMITIVE" *) 
@@ -91,7 +86,7 @@ module clk_wiz_0_clk_wiz
     .CLKOUT5_DIVIDE(1),
     .CLKOUT5_DUTY_CYCLE(0.500000),
     .CLKOUT5_PHASE(0.000000),
-    .COMPENSATION("ZHOLD"),
+    .COMPENSATION("BUF_IN"),
     .DIVCLK_DIVIDE(5),
     .IS_CLKINSEL_INVERTED(1'b0),
     .IS_PWRDWN_INVERTED(1'b0),

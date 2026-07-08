@@ -293,3 +293,5 @@ set_property PACKAGE_PIN R18 [get_ports {JC[7]}]
 #set_property PACKAGE_PIN K19 [get_ports QspiCSn]					
 	#set_property IOSTANDARD LVCMOS33 [get_ports QspiCSn]
 
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets JC_IBUF[0]]
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets JB_IBUF[1]]

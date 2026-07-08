@@ -38,7 +38,7 @@ module accel_FIFO(
     // Only set FIFO wr_en when there's FIFO space, is not busy resetting, and WE is enabled
     assign wr_en = !full  && !wr_rst_busy && WE;
     // Only set FIFO rd_en when there's FIFO data, is not busy resetting, and RE is enabled
-    assign rd_en = !empty && !rd_rst_busy && RE && (frame_available || frame_active);
+    //assign rd_en = !empty && !rd_rst_busy && RE && (frame_available || frame_active);
 
 
 //    // Define logic for writing from the accelerometer to the FIFO

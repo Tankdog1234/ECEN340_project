@@ -24,7 +24,7 @@ module FFT_OUT_SPI(
     //while we are shifting the data from par_data_in to par_data_hold, use par_hold_data. Else use saved data
     assign MISO = (bit_out == 0) ? par_data_in[bit_out] : par_data_hold[bit_out]; 
     //on posedge of spi_clk (if CS) Increment bit_out. If we are on the first bit (bit_out == 0) shift in new par_data 
-    always @ (posedge spi_clk)
+    always @ (negedge spi_clk)
     begin
         if(!CS)bit_out <= bit_out +1;
         else bit_out <= bit_out;

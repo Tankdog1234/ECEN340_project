@@ -1,23 +1,4 @@
 `timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 06/18/2026 01:56:57 PM
-// Design Name: 
-// Module Name: accel_top
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
 
 
 module accel_FSM (
@@ -163,6 +144,7 @@ module accel_FSM (
     end
     
     always @ (*) begin: OUTPUT_LOGIC
+        MOSI = 1'b0;
         case (curr_state) // TODO add a default case
             CONFIG: begin
                 DATA_READY_FIFO = 1'b0; // TODO fix inferred latch of DATA_READY_FIFO

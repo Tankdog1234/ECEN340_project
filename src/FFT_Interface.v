@@ -47,7 +47,7 @@ module FFT_Interface(
     .event_frame_started(           FFT_status[0]), 
     .event_tlast_unexpected(        FFT_status[1]),
     .event_tlast_missing(           FFT_status[2]),
-    .event_status_chanel_halt(      FFT_status[3]),
+    //.event_status_chanel_halt(      FFT_status[3]),
     .event_data_in_channel_halt(    FFT_status[4]),
     .event_data_out_channel_halt(   FFT_status[5])
     );
