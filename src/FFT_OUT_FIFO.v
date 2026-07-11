@@ -21,7 +21,7 @@ module FFT_OUT_FIFO(
     );
     wire gated_we, gated_re;
     assign gated_we = write_enable & ~wr_rst_busy;
-    assign gated_re = ~read_enable & ~rd_rst_busy & ~FIFO_EMPTY;
+    assign gated_re = read_enable & ~rd_rst_busy & ~FIFO_EMPTY;
 
     fifo_generator_1 FIFO_OUT (
         .full(FIFO_FULL), // goes high if the fifo is completely full

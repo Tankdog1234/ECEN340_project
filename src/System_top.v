@@ -140,7 +140,7 @@ module System_top(
         .FIFO_FULL(),
         .data_in(FFT_data_out),
         .write_enable(DDV_WE),
-        .FIFO_EMPTY(),
+        .FIFO_EMPTY(JC[0]),
         .data_out(par_data_fifo_out),
         .read_enable(!JB[4]), //CS line
         .rst_ext(BtnC_tm2_ext_clk),
