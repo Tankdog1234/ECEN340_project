@@ -1,23 +1,25 @@
 # ==========================================
-# Vivado Project Files (Since we will be using Tcl scripts)
+# Vivado Project Files
 # ==========================================
+# Ignored because the project will be recreated via Tcl script
 *.xpr
 
 # ==========================================
 # Vivado Directory and Workspace Dumps
 # ==========================================
-# This blocks the massive local folders Vivado generates automatically
+# Blocks the massive local directories Vivado generates automatically
 *.cache/
 *.hw/
 *.sim/
 *.ip_user_files/
 *.runs/
 .Xil/
+_x/
 
 # ==========================================
 # Vivado Log, Journal, and Process Files
 # ==========================================
-# These files track your cursor, open windows, and logs for every single run
+# Tracks runtime logs, window states, and process IDs
 *.log
 *.jou
 *.pb
@@ -26,9 +28,36 @@ vivado_pid*.str
 vivado_pid*.zip
 
 # ==========================================
-# IP & Block Design Generated Outputs
+# Generated Hardware & Wrapper Artifacts
 # ==========================================
-# Only keep your original .xci or .bd files. Ignore everything Vivado 
-# spits out when it synthesizes or targets them locally.
-_x/
-*.ip_user_files/
+# Automatically generated top-level HDL wrappers for block designs
+*_wrapper.v
+*_wrapper.vhd
+# Hardware handoff files and system definitions for Vitis/SDK
+*.xsa
+*.sysdef
+# Design Checkpoints and reports (Vivado will regenerate these during runs)
+*.dcp
+*.rpt
+
+# ==========================================
+# Vivado Backup & Auto-Save Files
+# ==========================================
+*.backup.*
+*~
+
+# ==========================================
+# Vitis / Embedded SDK Workspace Artifacts
+# ==========================================
+# Keeps C/C++ firmware workspace junk out of the repository
+.metadata/
+.analytics/
+Workspace/
+ide.log
+*.spc
+
+# ==========================================
+# OS Clean-up
+# ==========================================
+.DS_Store
+Thumbs.db
