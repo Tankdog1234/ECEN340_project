@@ -91,7 +91,7 @@ module system_top2 (
     assign JA[1] = MOSI;
     assign JA[0] = outClk;
     
-    
+
     // 1 MHz clock module
     acc_spi_clk_gen C1 (
         .clk(clk), 
@@ -121,7 +121,7 @@ module system_top2 (
         .RE(win_ready),
         .FIFO_out(FIFO1_out),
         .data_ready(data_ready),
-        .data_last(data_last)
+        .data_last(data_last)   // Indicates last sample read out of FIFO1
     );
 
 
@@ -131,17 +131,17 @@ module system_top2 (
         .DA_in(data_ready),
         .data_in(FIFO1_out),
         .ready_out(win_ready),
-        .DA_out(win_DA_out),
+        .DA_out(win_DA_out),    // Indicates data is valid to be written to FIFO2. Remains high until the last sample is written to FIFO2
         .data_out(window_out),
-        .FFT_ready(1'b1), // FIFO is always ready to accept data. FFT has been cut at least temporarily
-        .data_last(data_last),
-        .data_last_pipeline(data_last_pipeline)
+        .FFT_ready(1'b1),       // FIFO is always ready to accept data. FFT has been cut at least temporarily
+        .data_last(data_last),  // Receives last sample read flag from FIFO1
+        .data_last_pipeline(data_last_pipeline) // Passes last sample read flag to count1024 module
     );
 
 
     count1024 U1 (
         .clk(clk),
-        .triggerStart(data_last_pipeline),  // Trigger to reset the count to 0, on data_last
+        .triggerStart(data_last_pipeline),  // Trigger to reset the count to 0 on data_last
         .wr_en_in(win_DA_out),              // Input write enable from windowing module
         .wr_en_out(DDV_WE),                 // Output write enable to FIFO
         .data_ready(JB[0])                  // Data_ready flag for MCU
@@ -150,8 +150,8 @@ module system_top2 (
 
     FFT_OUT_FIFO FIFO2 (
         .FIFO_FULL(),
-        .data_in(window_out),
-        .write_enable(DDV_WE),
+        .data_in(window_out),               // Receives 32-bit wide data from windowing module
+        .write_enable(DDV_WE),              // Receive write enable from count1024 module
         .FIFO_EMPTY(),
         .data_out(par_data_fifo_out),
         .read_enable(!JB[4]), //CS line
