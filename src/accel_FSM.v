@@ -107,7 +107,10 @@ module accel_FSM (
     
     always @ (posedge ser_clk) begin: MISO_SAMPLING
         if ((curr_state == READ) && (read_cnt <= 16) && (read_cnt > 0)) begin 
-            data_out <= {data_out[14:0], MISO};
+           if (read_cnt > 8)
+                data_out[7:0] <= {data_out[6:0], MISO}; // Shift DATAX0 into LSB
+            else
+                data_out[15:8] <= {data_out[14:8], MISO}; // Shift DATAX1 into MSB
         end
         
     end

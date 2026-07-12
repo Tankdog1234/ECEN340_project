@@ -38,7 +38,7 @@ module windowing #(
         if (rst) begin
             addr_counter <= 0;
         end else if (DA_in && FFT_ready) begin
-            if (addr_counter == FFT_SIZE - 1) begin
+            if ((addr_counter == FFT_SIZE - 1) | (data_last == 1)) begin
                 addr_counter <= 0;
             end else begin
                 addr_counter <= addr_counter + 1;

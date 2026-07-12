@@ -56,6 +56,8 @@ module system_top2 (
     wire wr_rst_busy;
     wire rd_rst_busy;
 
+    wire CS_2;
+
     initial begin
         BtnC_tm1_clk=0;
         BtnC_tm2_clk=0;
@@ -68,8 +70,8 @@ module system_top2 (
     always @ (posedge clk) begin
         BtnC_tm1_clk <= btnC;
         BtnC_tm2_clk <= BtnC_tm1_clk;
-        spi_cont <=JC[6];
-        spi_mask <=JC[5];
+        spi_cont <=JC[1];
+        spi_mask <=JC[0];
     end
 
     always @ (posedge spi_clk) begin
@@ -154,7 +156,7 @@ module system_top2 (
         .write_enable(DDV_WE),              // Receive write enable from count1024 module
         .FIFO_EMPTY(),
         .data_out(par_data_fifo_out),
-        .read_enable(!JB[4]), //CS line
+        .read_enable(!CS_2), //CS line
         .rst_ext(BtnC_tm2_ext_clk),
         .wr_clk(clk),
         .rd_clk(rd_clk),
@@ -168,9 +170,10 @@ module system_top2 (
         .par_data_in(par_data_fifo_out),
         .spi_clk(spi_mask),
         .spi_clk_cont(spi_cont),
-        .CS(JB[4]),
+        .CS(JB[1]),
         .MISO(JB[3]),
-        .rd_clk(rd_clk)
+        .rd_clk(rd_clk),
+        .CS_tm2(CS_2)
     );
     
 endmodule
