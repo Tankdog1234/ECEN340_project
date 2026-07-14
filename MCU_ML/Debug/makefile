@@ -9,6 +9,7 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
+-include X-CUBE-AI/App/subdir.mk
 -include Drivers/STM32L4xx_HAL_Driver/Src/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk
@@ -61,7 +62,7 @@ main-build: MCU_ML.elf secondary-outputs
 
 # Tool invocations
 MCU_ML.elf MCU_ML.map: $(OBJS) $(USER_OBJS) C:\Users\User\Documents\GitHub\ECEN340_project\MCU_ML\STM32L476RGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "MCU_ML.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\User\Documents\GitHub\ECEN340_project\MCU_ML\STM32L476RGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="MCU_ML.map" -Wl,--gc-sections -static -L"C:\Users\User\Documents\GitHub\ECEN340_project\MCU_ML\CMSIS_DSP" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+	arm-none-eabi-gcc -o "MCU_ML.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\User\Documents\GitHub\ECEN340_project\MCU_ML\STM32L476RGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="MCU_ML.map" -Wl,--gc-sections -static -L"C:\Users\User\Documents\GitHub\ECEN340_project\MCU_ML\CMSIS_DSP" -L../Middlewares/ST/AI/Lib --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

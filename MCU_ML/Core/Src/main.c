@@ -25,6 +25,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include "network.h"
+#include "network_data.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -39,10 +41,24 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+// 1602 I2C address
+#define I2C_ADDR 0x27 // I2C address of the PCF8574
+// 1602 dimensions
+#define LCD_ROWS 2 // Number of rows on the LCD
+#define LCD_COLS 16 // Number of columns on the LCD
+// 1602 message bit numbers
+#define DC_BIT 0 // Data/Command bit (register select bit)
+#define EN_BIT 2 // Enable bit
+#define BL_BIT 3 // Backlight bit
+#define D4_BIT 4 // Data 4 bit
+#define D5_BIT 5 // Data 5 bit
+#define D6_BIT 6 // Data 6 bit
+#define D7_BIT 7 // Data 7 bit
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+CRC_HandleTypeDef hcrc;
+
 I2C_HandleTypeDef hi2c1;
 
 SPI_HandleTypeDef hspi1;
@@ -54,13 +70,22 @@ UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
+ai_u8 activations[AI_NETWORK_DATA_ACTIVATIONS_SIZE];
+ai_handle network;
+ai_buffer ai_input[AI_NETWORK_IN_NUM];
+ai_buffer ai_output[AI_NETWORK_OUT_NUM];
+float most_likely;
+int status;
 //arm_cfft_instance_q31 fft_instance;
 q15_t fft_buffer[2048];
 q15_t magnitude_buffer[1024];
-bool window_ready;
+volatile bool window_ready = false;
 uint8_t sync_header[2];
-  uint8_t sync_footer[2];
+uint8_t sync_footer[2];
+float ai_data[512];
+float ai_outputs[3];
 extern const arm_cfft_instance_q15 arm_cfft_sR_q15_len1024;
+char confidence[16];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -71,8 +96,15 @@ static void MX_USART2_UART_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_TIM15_Init(void);
+static void MX_CRC_Init(void);
 /* USER CODE BEGIN PFP */
-
+void CharLCD_Write_Nibble (uint8_t nibble, uint8_t dc);
+void CharLCD_Send_Cmd(uint8_t cmd);
+void CharLCD_Send_Data(uint8_t data);
+void CharLCD_Init();
+void CharLCD_Write_String(char *str);
+void CharLCD_Set_Cursor(uint8_t row, uint8_t column);
+void CharLCD_Clear(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -113,6 +145,7 @@ int main(void)
   MX_SPI1_Init();
   MX_I2C1_Init();
   MX_TIM15_Init();
+  MX_CRC_Init();
   /* USER CODE BEGIN 2 */
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, 1);
   window_ready = false;
@@ -121,6 +154,19 @@ int main(void)
   sync_footer[0] = 0xCC;
   sync_footer[1] = 0xDD;
   HAL_TIM_PWM_Start(&htim15, TIM_CHANNEL_1);
+  CharLCD_Init(); // Initialize the LCD
+
+  ai_network_create(&network, AI_NETWORK_DATA_CONFIG);
+  ai_network_params params = AI_NETWORK_PARAMS_INIT(
+        AI_NETWORK_DATA_WEIGHTS(ai_network_data_weights_get()),
+        AI_NETWORK_DATA_ACTIVATIONS(activations)
+    );
+  ai_network_init(network, &params);
+  ai_input[0] = ai_network_inputs_get(network, NULL)[0];
+    ai_output[0] = ai_network_outputs_get(network, NULL)[0];
+
+    ai_input[0].data = AI_HANDLE_PTR(ai_data);
+    ai_output[0].data = AI_HANDLE_PTR(ai_outputs);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -145,6 +191,46 @@ int main(void)
 		  arm_cmplx_mag_q15(fft_buffer, magnitude_buffer, 1024);
 		  HAL_UART_Transmit(&huart2, sync_header, 2, 100);
 		  HAL_UART_Transmit_DMA(&huart2, (uint8_t*)magnitude_buffer, 1024);
+		  for(int i=0; i<512; i++){
+			  ai_data[i]=(float)magnitude_buffer[i];
+		  }
+		  ai_network_run(network, &ai_input[0], &ai_output[0]);
+		  most_likely = -1;
+		  status = -1;
+		  for(int i = 0; i<3; i++){
+			  if(ai_outputs[i] > most_likely) {
+				  most_likely = ai_outputs[i];
+				  status = i;
+			  }
+		  }
+		  snprintf(confidence, sizeof(confidence), "Conf: %.1f%%", (100.0f*most_likely));
+		  CharLCD_Clear();
+		  switch(status){
+		  case 0:
+		   CharLCD_Set_Cursor(0,0); // Set cursor to row 0, column 0
+		   CharLCD_Write_String("Fan OFF");
+		   CharLCD_Set_Cursor(1,0); // Set cursor to row 1, column 0
+		   CharLCD_Write_String(confidence);
+			  break;
+		  case 1:
+			   CharLCD_Set_Cursor(0,0); // Set cursor to row 0, column 0
+			   CharLCD_Write_String("Fan BALANCED");
+			   CharLCD_Set_Cursor(1,0); // Set cursor to row 1, column 0
+			   CharLCD_Write_String(confidence);
+			  break;
+		  case 2:
+			   CharLCD_Set_Cursor(0,0); // Set cursor to row 0, column 0
+			   CharLCD_Write_String("Fan UNBALANCED");
+			   CharLCD_Set_Cursor(1,0); // Set cursor to row 1, column 0
+			   CharLCD_Write_String(confidence);
+			  break;
+		  default:
+			   CharLCD_Set_Cursor(0,0); // Set cursor to row 0, column 0
+			   CharLCD_Write_String("ERROR!!");
+			   CharLCD_Set_Cursor(1,0); // Set cursor to row 1, column 0
+			   CharLCD_Write_String(confidence);
+			  break;
+		  }
 		  window_ready = false;
 	  }
   }
@@ -198,6 +284,37 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief CRC Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_CRC_Init(void)
+{
+
+  /* USER CODE BEGIN CRC_Init 0 */
+
+  /* USER CODE END CRC_Init 0 */
+
+  /* USER CODE BEGIN CRC_Init 1 */
+
+  /* USER CODE END CRC_Init 1 */
+  hcrc.Instance = CRC;
+  hcrc.Init.DefaultPolynomialUse = DEFAULT_POLYNOMIAL_ENABLE;
+  hcrc.Init.DefaultInitValueUse = DEFAULT_INIT_VALUE_ENABLE;
+  hcrc.Init.InputDataInversionMode = CRC_INPUTDATA_INVERSION_NONE;
+  hcrc.Init.OutputDataInversionMode = CRC_OUTPUTDATA_INVERSION_DISABLE;
+  hcrc.InputDataFormat = CRC_INPUTDATA_FORMAT_BYTES;
+  if (HAL_CRC_Init(&hcrc) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN CRC_Init 2 */
+
+  /* USER CODE END CRC_Init 2 */
+
 }
 
 /**
@@ -383,7 +500,7 @@ static void MX_USART2_UART_Init(void)
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
-  huart2.Init.Mode = UART_MODE_TX;
+  huart2.Init.Mode = UART_MODE_TX_RX;
   huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart2.Init.OverSampling = UART_OVERSAMPLING_16;
   huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
@@ -492,6 +609,100 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
     	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, 1);
         window_ready = true;
     }
+}
+
+void CharLCD_Write_Nibble(uint8_t nibble, uint8_t dc) {
+ uint8_t data = nibble << D4_BIT; // Shift nibble to D4-D7 position
+ data |= dc << DC_BIT; // Set DC bit for data/command selection
+ data |= 1 << BL_BIT; // Include backlight state in data
+ data |= 1 << EN_BIT; // Set enable bit high
+ HAL_I2C_Master_Transmit(&hi2c1, I2C_ADDR << 1, &data, 1, 100); // Send data with EN high
+ HAL_Delay(1); // Wait for data setup
+ data &= ~(1 << EN_BIT); // Clear enable bit (falling edge triggers LCD)
+ HAL_I2C_Master_Transmit(&hi2c1, I2C_ADDR << 1, &data, 1, 100); // Send data with EN low
+}
+/**
+ * @brief Send command to LCD
+ * @param cmd: 8-bit command to send to LCD controller
+ * @retval None
+ */
+void CharLCD_Send_Cmd(uint8_t cmd) {
+ uint8_t upper_nibble = cmd >> 4; // Extract upper 4 bits
+ uint8_t lower_nibble = cmd & 0x0F; // Extract lower 4 bits
+ CharLCD_Write_Nibble(upper_nibble, 0); // Send upper nibble (DC=0 for command)
+ CharLCD_Write_Nibble(lower_nibble, 0); // Send lower nibble (DC=0 for command)
+ if (cmd == 0x01 || cmd == 0x02) { // Clear display or return home commands
+ HAL_Delay(2); // These commands need extra time
+ }
+}
+/**
+ * @brief Send data (character) to LCD
+ * @param data: 8-bit character data to display
+ * @retval None
+ */
+void CharLCD_Send_Data(uint8_t data) {
+ uint8_t upper_nibble = data >> 4; // Extract upper 4 bits
+ uint8_t lower_nibble = data & 0x0F; // Extract lower 4 bits
+ CharLCD_Write_Nibble(upper_nibble, 1); // Send upper nibble (DC=1 for data)
+ CharLCD_Write_Nibble(lower_nibble, 1); // Send lower nibble (DC=1 for data)
+}
+/**
+ * @brief Initialize LCD in 4-bit mode via I2C
+ * @param None
+ * @retval None
+ */
+void CharLCD_Init() {
+ HAL_Delay(50); // Wait for LCD power-on reset (>40ms)
+ CharLCD_Write_Nibble(0x03, 0); // Function set: 8-bit mode (first attempt)
+ HAL_Delay(5); // Wait >4.1ms
+ CharLCD_Write_Nibble(0x03, 0); // Function set: 8-bit mode (second attempt)
+ HAL_Delay(1); // Wait >100us
+ CharLCD_Write_Nibble(0x03, 0); // Function set: 8-bit mode (third attempt)
+ HAL_Delay(1); // Wait >100us
+ CharLCD_Write_Nibble(0x02, 0); // Function set: switch to 4-bit mode
+ CharLCD_Send_Cmd(0x28); // Function set: 4-bit, 2 lines, 5x8 font
+ CharLCD_Send_Cmd(0x0C); // Display control: display on/cursor off/blink off
+ CharLCD_Send_Cmd(0x06); // Entry mode: increment cursor, no shift
+ CharLCD_Send_Cmd(0x01); // Clear display
+ HAL_Delay(2); // Wait for clear display command
+}
+/**
+ * @brief Write string to LCD at current cursor position
+ * @param str: Pointer to null-terminated string
+ * @retval None
+ */
+void CharLCD_Write_String(char *str) {
+ while (*str) { // Loop until null terminator
+ CharLCD_Send_Data(*str++); // Send each character and increment pointer
+ }
+}
+/**
+ * @brief Set cursor position on LCD
+ * @param row: Row number (0 or 1 for 2-line display)
+ * @param column: Column number (0 to display width - 1)
+ * @retval None
+ */
+void CharLCD_Set_Cursor(uint8_t row, uint8_t column) {
+ uint8_t address;
+ switch (row) {
+ case 0:
+ address = 0x00; break; // First line starts at address 0x00
+ case 1:
+ address = 0x40; break; // Second line starts at address 0x40
+ default:
+ address = 0x00; // Default to first line for invalid row
+ }
+ address += column; // Add column offset
+ CharLCD_Send_Cmd(0x80 | address); // Set DDRAM address command (0x80 + address)
+}
+/**
+ * @brief Clear LCD display and return cursor to home position
+ * @param None
+ * @retval None
+ */
+void CharLCD_Clear(void) {
+ CharLCD_Send_Cmd(0x01); // Clear display command
+ HAL_Delay(2); // Wait for command execution
 }
 /* USER CODE END 4 */
 
