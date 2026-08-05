@@ -46,7 +46,8 @@ module accel_FSM (
               // Bits 1 & 0 = Range bits
               SET_DATA_FORMAT = {W, MB_F, DATA_FORMAT_ADDR, 8'b0000_0101}, // 16 clock cycles
               READ_CMD = {R, MB_T, READ_ADDR}, // 8 bits starting a read
-              WRITE_CONFIG_DATA = {NS, NS, FIFO_CONFIG, NS,NS, INTERR_CONFIG, NS,NS, SET_800Hz_SAMPLE, NS,NS, SET_DATA_FORMAT, NS,NS, SET_MEASURE_BIT};
+              WRITE_CONFIG_DATA = {NS, NS, FIFO_CONFIG, NS,NS, INTERR_CONFIG, NS,NS,
+                                   SET_800Hz_SAMPLE, NS,NS, SET_DATA_FORMAT, NS,NS, SET_MEASURE_BIT};
               
     reg [1:0] curr_state, next_state;
     reg [6:0] config_cnt; // 94 clock cycles for config (decrementing)
@@ -116,11 +117,11 @@ module accel_FSM (
     end
     
     always @ (*) begin: NEXT_STATE_LOGIC
-        case (curr_state) // TODO add a default case
+        case (curr_state)
             CONFIG: begin
                 //DATA_READY_FIFO = 1'b0;
                 if (config_cnt == 0) begin
-                    next_state = IDLE; // TODO fix inferred latch of next_state
+                    next_state = IDLE;
                 end else begin
                     next_state = CONFIG;
                 end
@@ -148,10 +149,10 @@ module accel_FSM (
     
     always @ (*) begin: OUTPUT_LOGIC
         MOSI = 1'b0;
-        case (curr_state) // TODO add a default case
+        case (curr_state)
             CONFIG: begin
-                DATA_READY_FIFO = 1'b0; // TODO fix inferred latch of DATA_READY_FIFO
-                MOSI = WRITE_CONFIG_DATA[config_cnt]; // TODO fix inferred latch of MOSI
+                DATA_READY_FIFO = 1'b0;
+                MOSI = WRITE_CONFIG_DATA[config_cnt];
                 // Pulse CS high after each config command
                 if ((config_cnt > 96) || (config_cnt == 79) || (config_cnt == 53) || (config_cnt == 35) || (config_cnt == 17)) begin
                     CS = 1'b1;
@@ -172,7 +173,7 @@ module accel_FSM (
                 
                 // Bits 24-17 are command and address data
                 if (read_cnt <= 24 && read_cnt > 16) begin
-                    MOSI = READ_CMD[read_cnt - 17]; // TODO Input operands(of sizes 5 1) of add/sub cluster ending with expression '(read_cnt - 17)' could yield maximum size of 5, but only width of 3 is being used
+                    MOSI = READ_CMD[read_cnt - 17];
                     CS = 1'b0;
 
                 end else if (read_cnt <= 16 && read_cnt > 0) begin
