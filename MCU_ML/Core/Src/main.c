@@ -186,25 +186,26 @@ int main(void)
 	   *
 	   *
 	   * */
-	  if(window_ready){
-		  arm_cfft_q15(&arm_cfft_sR_q15_len1024, fft_buffer, 0, 1);
-		  arm_cmplx_mag_q15(fft_buffer, magnitude_buffer, 1024);
+	  if(window_ready){ // runs after SPI transaction finished
+		  arm_cfft_q15(&arm_cfft_sR_q15_len1024, fft_buffer, 0, 1); // Compute FFT
+		  arm_cmplx_mag_q15(fft_buffer, magnitude_buffer, 1024); // Compute Complex Mag
 		  HAL_UART_Transmit(&huart2, sync_header, 2, 100);
-		  HAL_UART_Transmit_DMA(&huart2, (uint8_t*)magnitude_buffer, 1024);
+		  HAL_UART_Transmit_DMA(&huart2, (uint8_t*)magnitude_buffer, 1024); // send the data over UART
 		  for(int i=0; i<512; i++){
-			  ai_data[i]=(float)magnitude_buffer[i];
+			  ai_data[i]=(float)magnitude_buffer[i]; // Convert ints to floats for AI stuff
 		  }
-		  ai_network_run(network, &ai_input[0], &ai_output[0]);
+		  ai_network_run(network, &ai_input[0], &ai_output[0]); // make an AI infrence
 		  most_likely = -1;
 		  status = -1;
-		  for(int i = 0; i<3; i++){
+		  for(int i = 0; i<3; i++){ // find what state is most likely
 			  if(ai_outputs[i] > most_likely) {
 				  most_likely = ai_outputs[i];
 				  status = i;
 			  }
 		  }
+		  //create a string of the confidence value
 		  snprintf(confidence, sizeof(confidence), "Conf: %.1f%%", (100.0f*most_likely));
-		  CharLCD_Clear();
+		  CharLCD_Clear(); // clear the LCD
 		  switch(status){
 		  case 0:
 		   CharLCD_Set_Cursor(0,0); // Set cursor to row 0, column 0
@@ -231,7 +232,7 @@ int main(void)
 			   CharLCD_Write_String(confidence);
 			  break;
 		  }
-		  window_ready = false;
+		  window_ready = false; // Set window_ready to false and wait for next packet
 	  }
   }
   /* USER CODE END 3 */

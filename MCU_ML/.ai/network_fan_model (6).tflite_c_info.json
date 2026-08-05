@@ -393,44 +393,44 @@
   ],
   "environment": {
     "generated_model": {
-      "generated_time": "2026-07-13T23:34:45-0600",
+      "generated_time": "2026-07-14T13:23:32-0600",
       "model_files": [
         {
           "name": "network_data_params.h",
-          "signature": "0x94043c8314438ed393c29fcb020171d9"
+          "signature": "0xb833506b821b8c6b2a0735ed57102911"
         },
         {
           "name": "network_data_params.c",
-          "signature": "0x1fb858ed4cbc51b3088902e905783461"
+          "signature": "0xa98e722d7bf7b90743701832adee9b7d"
         },
         {
           "name": "network_data.h",
-          "signature": "0x9a1a07da5139afafe46f957ea143b486"
+          "signature": "0x34efeba50cde40a8f99302f6cf94bf9c"
         },
         {
           "name": "network_data.c",
-          "signature": "0xc074c83d0db23104fb4540e1d84ce43e"
+          "signature": "0x83facbf73cdad1af572f6053a47aff60"
         },
         {
           "name": "network_config.h",
-          "signature": "0xb85a9e60d0688413494e4e91565d31d2"
+          "signature": "0x530fa16e971717c9373b7efc074c4bfd"
         },
         {
           "name": "network.h",
-          "signature": "0x225db423a2211d348ac0105cf0562f0a"
+          "signature": "0x0a01b607ea162fe35d837c134dd73b40"
         },
         {
           "name": "network.c",
-          "signature": "0x5d255f95f0d6ec13b690661af53f9450"
+          "signature": "0xdb6fb464c74d884e554f0fe68ec1942f"
         }
       ],
       "name": "network"
     },
-    "network_signature": "0x83540f26de405146",
+    "network_signature": "0xd348efd0a3d9fd11",
     "test_name": "",
     "tools": [
       {
-        "arguments": "generate --target stm32l4 --name network -m C:/Users/User/Downloads/fan_model (6).tflite --compression none --verbosity 1 --workspace C:/Users/User/AppData/Local/Temp/mxAI_workspace5098517218014002854122877596734652 --output C:/Users/User/.stm32cubemx/network_output",
+        "arguments": "analyze --target stm32l4 --name network -m C:/Users/User/Downloads/fan_model (6).tflite --compression none --verbosity 1 --workspace C:/Users/User/AppData/Local/Temp/mxAI_workspace5595850634636004749288088310482899 --output C:/Users/User/.stm32cubemx/network_output",
         "environment": [
           "STATS_TYPE=X-CUBE-AI"
         ],
